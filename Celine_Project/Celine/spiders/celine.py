@@ -2,7 +2,7 @@ import scrapy
 import datetime
 import uuid
 import random
-from Celine.items import CategoryTree, ProductInfo
+from Celine.items import CategoryTree, ProductInfo, TreeLevel
 from Celine.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 
 
@@ -27,39 +27,89 @@ class CelineSpider(scrapy.Spider):
     def parseP(self, response):
         success = response.status == 200
         if success:
+            levels = self.generate_levels(response)
+            first = levels['1']
+            second = levels['2']
+            third = levels['3']
+            for item in third:
+                level_two = ''
+                level_one = ''
+                for l in second:
+                    if level_two != '':
+                        for f in first:
+                            if l['DomParentId'] == f['DomId']:
+                                level_one = f['Name']
+                                break
+                        break
+                    else:
+                        for u in l['Urls']:
+                            if item['DomParentId'] == u['DomId']:
+                                level_two = u['Name']
+                                break
+                if level_one == '':
+                    break
+
+                for url in item['Urls']:
+                    category_tree = CategoryTree()
+                    category_itemloader = CategoryTreeItemLoader(item=category_tree, response=response)
+                    category_itemloader.add_value('Id', str(uuid.uuid4()))
+                    if self.main_url not in url['Url']:
+                        category_itemloader.add_value('Level_Url', self.main_url + url['Url'])
+                    else:
+                        category_itemloader.add_value('Level_Url', url['Url'])
+
+                    category_itemloader.add_value('CategoryLevel1', level_one)
+                    category_itemloader.add_value('CategoryLevel2', level_two)
+                    category_itemloader.add_value('CategoryLevel3', url['Name'])
+                    category_itemloader.add_value('CategoryLevel4', '')
+                    category_itemloader.add_value('CategoryLevel5', '')
+
+                    time = datetime.datetime.now().isoformat()
+                    category_itemloader.add_value('CreateDateTime', time)
+                    category_itemloader.add_value('UpdateDateTime', time)
+
+                    category_itemloader.add_value('ManufacturerId', 12)
+                    category_itemloader.add_value('CategoryId', 20)
+
+                    item_load = category_itemloader.load_item()
+
+                    yield item_load
+                    yield scrapy.Request(url=item_load['Level_Url'], callback=self.getProducts, meta={
+                        'CategoryId': item_load['Id']
+                    }, headers=random.choice(self.headers_list))
+
             urls = response.css('nav div.a17-grid__right a.a-btn.a-btn--as-link::attr(href)').extract()
-            print(len(set(urls)), 99999999999999999999999999999)
 
-            for url in set(urls):
-                category_tree = CategoryTree()
-                category_itemloader = CategoryTreeItemLoader(item=category_tree, response=response)
-                category_itemloader.add_value('Id', str(uuid.uuid4()))
-
-                if self.main_url not in url:
-                    category_itemloader.add_value('Level_Url', self.main_url + url)
-                else:
-                    category_itemloader.add_value('Level_Url', url)
-
-                levels = self.getLevels(url)
-                category_itemloader.add_value('CategoryLevel1', levels[1])
-                category_itemloader.add_value('CategoryLevel2', levels[2])
-                category_itemloader.add_value('CategoryLevel3', levels[3])
-                category_itemloader.add_value('CategoryLevel4', levels[4])
-                category_itemloader.add_value('CategoryLevel5', levels[5])
-
-                time = datetime.datetime.now().isoformat()
-                category_itemloader.add_value('CreateDateTime', time)
-                category_itemloader.add_value('UpdateDateTime', time)
-
-                category_itemloader.add_value('ManufacturerId', 12)
-                category_itemloader.add_value('CategoryId', 20)
-
-                item_load = category_itemloader.load_item()
-
-                yield item_load
-                yield scrapy.Request(url=item_load['Level_Url'], callback=self.getProducts, meta={
-                    'CategoryId': item_load['Id']
-                }, headers=random.choice(self.headers_list))
+            # for url in set(urls):
+            #     category_tree = CategoryTree()
+            #     category_itemloader = CategoryTreeItemLoader(item=category_tree, response=response)
+            #     category_itemloader.add_value('Id', str(uuid.uuid4()))
+            #
+            #     if self.main_url not in url:
+            #         category_itemloader.add_value('Level_Url', self.main_url + url)
+            #     else:
+            #         category_itemloader.add_value('Level_Url', url)
+            #
+            #     levels = self.getLevels(url)
+            #     category_itemloader.add_value('CategoryLevel1', levels[1])
+            #     category_itemloader.add_value('CategoryLevel2', levels[2])
+            #     category_itemloader.add_value('CategoryLevel3', levels[3])
+            #     category_itemloader.add_value('CategoryLevel4', levels[4])
+            #     category_itemloader.add_value('CategoryLevel5', levels[5])
+            #
+            #     time = datetime.datetime.now().isoformat()
+            #     category_itemloader.add_value('CreateDateTime', time)
+            #     category_itemloader.add_value('UpdateDateTime', time)
+            #
+            #     category_itemloader.add_value('ManufacturerId', 12)
+            #     category_itemloader.add_value('CategoryId', 20)
+            #
+            #     item_load = category_itemloader.load_item()
+            #
+            #     yield item_load
+            #     yield scrapy.Request(url=item_load['Level_Url'], callback=self.getProducts, meta={
+            #         'CategoryId': item_load['Id']
+            #     }, headers=random.choice(self.headers_list))
 
     def getProducts(self, response):
         category_id = response.meta['CategoryId']
@@ -84,6 +134,49 @@ class CelineSpider(scrapy.Spider):
         level_list = url.split('/')
         level_list = level_list + [None] * (6 - len(level_list))
         return level_list
+
+    def generate_levels(self, response):
+        levels = dict()
+        first = list()
+        second = list()
+        third = list()
+        for level in response.css('a.a-btn.a-btn--as-link[data-level="0"]'):
+            tree_level = TreeLevel()
+            tree_level['Level'] = level.css('::attr(data-level)').get()
+            tree_level['Name'] = level.css('::text').get()
+            tree_level['DomId'] = level.css('::attr(id)').get()
+            first.append(tree_level)
+        levels['1'] = first
+
+        for level in response.css('div[data-level="1"]'):
+            second_list = list()
+            tree_level = TreeLevel()
+            tree_level['Level'] = level.css('::attr(data-level)').get()
+            tree_level['DomParentId'] = level.css('::attr(aria-labelledby)').get()
+            tree_level['Urls'] = list(map(self.get_second_names, level.css('ul:first-of-type>li>a[data-level="1"]')))
+            second.append(tree_level)
+        levels['2'] = second
+
+        for level in response.css('div[data-level="2"]'):
+            tree_level = TreeLevel()
+            tree_level['Level'] = level.css('::attr(data-level)').get()
+            tree_level['DomParentId'] = level.css('::attr(aria-labelledby)').get()
+            tree_level['Urls'] = list(map(self.get_level_urls, level.css('a')))
+            third.append(tree_level)
+        levels['3'] = third
+        return levels
+
+    def get_level_urls(self, a):
+        level = dict()
+        level['Url'] = a.css('::attr(href)').get()
+        level['Name'] = a.css('::text').get()
+        return level
+
+    def get_second_names(self, a):
+        tree_level = TreeLevel()
+        tree_level['Name'] = a.css('::text').get()
+        tree_level['DomId'] = a.css('::attr(id)').get()
+        return tree_level
 
     headers_list = [
         # Chrome
