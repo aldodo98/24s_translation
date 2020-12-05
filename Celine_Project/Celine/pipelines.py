@@ -8,6 +8,7 @@
 from itemadapter import ItemAdapter
 import pymysql
 from Celine.items import CategoryTree
+from Celine.spiders.product import ProductSpider
 
 
 class CelinePipeline:
@@ -33,6 +34,8 @@ class CelinePipeline:
         self.db_conn.close()
 
     def process_item(self, item, spider):
+        if isinstance(spider, ProductSpider):
+            return item
         if item.__class__ == CategoryTree:
             self.insert_tree(item)
         else:
