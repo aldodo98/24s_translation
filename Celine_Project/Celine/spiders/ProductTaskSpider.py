@@ -2,17 +2,36 @@ import scrapy
 import random
 from Celine.items import Product
 from Celine.itemloader import ProductItemLoader
+from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
+import json
+from Celine.settings import BOT_NAME
+from datetime import datetime
 
-class ProductSpider(scrapy.Spider):
-    name = 'product'
+
+class ProductTaskSpider(RedisSpider):
+    name = 'ProductTaskSpider'
+    redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.celine.com']
 
-    def start_requests(self):
-        urls = [
-            "https://www.celine.com/fr-fr/celine-boutique-femme/parfums/cologne-francaise-eau-de-parfum-100ml-6PC1H0405.37TT.html"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProductTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['ProductUrl'], dont_filter=True,
+                                         meta={'TaskId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
         try:
@@ -25,7 +44,7 @@ class ProductSpider(scrapy.Spider):
         product['Success'] = response.status == 200
         if response.status == 200:
             product_itemloader = ProductItemLoader(item=product, response=response)
-            product_itemloader.add_value('TaskId', 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+            product_itemloader.add_value('TaskId', response.meta['TaskId'])
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
 
@@ -36,13 +55,18 @@ class ProductSpider(scrapy.Spider):
             product_itemloader.add_value('Price', response.css('span.o-product__title-price.prices').get())
             product_itemloader.add_value('OldPrice', '')
 
-            product_itemloader.add_value(
-                'ImageThumbnailUrl',
-                response.urljoin(response.css('a.productImagePrimaryLink img').attrib['data-src']))
+            # 此处未完待续哦 还有上面的
+            # product_itemloader.add_value(
+            #     'ImageThumbnailUrl',
+            #     response.urljoin(response.css('a.productImagePrimaryLink img').attrib['data-src']))
+            #
+            # product_itemloader.add_value(
+            #     'ImageUrls', self.convertToFullUrls(
+            #         response.css('div.productImageGallery #images_galery_mobile img').xpath('@src').getall(), response))
 
-            product_itemloader.add_value(
-                'ImageUrls', self.convertToFullUrls(
-                    response.css('div.productImageGallery #images_galery_mobile img').xpath('@src').getall(), response))
+            product_itemloader.add_value('LastChangeTime', datetime.utcnow())
+            yield product_itemloader.load_item()
+
 
     def get_product_name(self, response):
         result = ''

@@ -20,25 +20,19 @@ class ProductInfo(scrapy.Item):
     ProductUrl = scrapy.Field()
     Id = scrapy.Field()
     CategoryTreeId = scrapy.Field()
+    ProjectName = scrapy.Field()
     ProductName = scrapy.Field()
     Price = scrapy.Field()
-
-    SpiderScriptPath = scrapy.Field()
-    Seconds = scrapy.Field()
-    Enabled = scrapy.Field()
-
-    LastStartUtc = scrapy.Field()
-    LastEndUtc = scrapy.Field()
-    LastSuccessUtc = scrapy.Field()
-    Status = scrapy.Field()
     ProductId = scrapy.Field()
 
 
 class CategoryTree(scrapy.Item):
     Id = scrapy.Field()
+    RootId = scrapy.Field()
     ManufacturerId = scrapy.Field()
     CategoryId = scrapy.Field()
 
+    ProjectName = scrapy.Field()
     CategoryLevel1 = scrapy.Field()
     CategoryLevel2 = scrapy.Field()
     CategoryLevel3 = scrapy.Field()
