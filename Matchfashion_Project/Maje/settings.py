@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'Celine'
+BOT_NAME = 'Maje'
 
-SPIDER_MODULES = ['Celine.spiders']
-NEWSPIDER_MODULE = 'Celine.spiders'
+SPIDER_MODULES = ['Maje.spiders']
+NEWSPIDER_MODULE = 'Maje.spiders'
 
 DOWNLOAD_DELAY = 3
 
@@ -20,22 +20,14 @@ MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
 ITEM_PIPELINES = {
-   'Celine.pipelines.CelinePipeline': 300,
-}
-
-# SPIDER_MIDDLEWARES = {
-#    'Celine.middlewares.CelineSpiderMiddleware': 543,
-# }
-
-DOWNLOADER_MIDDLEWARES = {
-   'Celine.middlewares.CelineDownloaderMiddleware': 543,
+   'Maje.pipelines.JsonPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'Celine (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -62,11 +54,15 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+#SPIDER_MIDDLEWARES = {
+#    'Celine.middlewares.CelineSpiderMiddleware': 543,
+#}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-
+# DOWNLOADER_MIDDLEWARES = {
+#    'Maje.middlewares.MajeDownloaderMiddleware': 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

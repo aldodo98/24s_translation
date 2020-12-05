@@ -5,13 +5,16 @@
 
 
 # useful for handling different item types with a single interface
+import json
+
 from itemadapter import ItemAdapter
 import pymysql
-from Celine.items import CategoryTree
-from Celine.spiders.product import ProductSpider
+from scrapy.utils.serialize import ScrapyJSONEncoder
+
+from Maje.items import CategoryTree
 
 
-class CelinePipeline:
+class MajePipeline:
 
     def open_spider(self, spider):
         """
@@ -34,8 +37,6 @@ class CelinePipeline:
         self.db_conn.close()
 
     def process_item(self, item, spider):
-        if isinstance(spider, ProductSpider):
-            return item
         if item.__class__ == CategoryTree:
             self.insert_tree(item)
         else:
@@ -79,3 +80,15 @@ class CelinePipeline:
         sql = 'INSERT INTO spiderproductcrawltasks(Id,CategoryTreeId,ProductName,ProductUrl,Price,Seconds,Enabled,Status) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)'
         self.db_cur.execute(sql, values)
         self.db_conn.commit()
+
+
+class JsonPipeline:
+    def open_spider(self, spider):
+        self.file = open('items.json', 'w', encoding='utf-8')
+    def close_spider(self, spider):
+        self.file.close()
+
+    def process_item(self, item, spider):
+        line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
+        self.file.writelines(line)
+        return item
