@@ -18,6 +18,7 @@ class ProductTaskSpider(RedisSpider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.celine.com']
+    main_url = "https://www.celine.com"
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
     def __init__(self, *args, **kwargs):
@@ -74,7 +75,7 @@ class ProductTaskSpider(RedisSpider):
             loadItem = product_itemloader.load_item()
 
             product_attributes = self.get_product_attributes(response)
-            loadItem['ImageUrls'] = urls
+            loadItem['ImageUrls'] = ','.join(urls)
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem
 

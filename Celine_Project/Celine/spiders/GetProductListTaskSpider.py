@@ -26,7 +26,7 @@ class GetProductListTaskSpider(RedisSpider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],
+        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
                                          meta={'CategoryTreeId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
@@ -40,23 +40,38 @@ class GetProductListTaskSpider(RedisSpider):
         try:
             success = response.status == 200
             if success:
-                categoryTreeId = response.meta['CategoryTreeId']
-                lists = response.css('ul.o-listing-grid li a')
-                for item in lists:
-                    product_info = ProductInfo()
-                    product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
-                    product_itemloader.add_value('CategoryTreeId', categoryTreeId)
-                    product_itemloader.add_value('Id', str(uuid.uuid4()))
-                    product_itemloader.add_value('ProjectName', BOT_NAME)
-
-                    product_itemloader.add_value('ProductUrl', self.main_url + item.css('::attr(href)').get())
-                    product_itemloader.add_value('ProductName', item.css('.m-product-listing__meta-title.f-body::text').get())
-                    product_itemloader.add_value('Price', item.css('strong.f-body--em::text').get())
-
-                    yield product_itemloader.load_item()
-                yield None
+                return self.getProducts(response)
         except Exception as err:
             print(err)
+
+    def getProducts(self, response):
+        category_id = response.meta['CategoryTreeId']
+        # lists = response.css('ul.o-listing-grid li a')
+        lists = list()
+        products_in_list = response.css('ul.o-listing-grid li a')
+        products_in_row = response.css('ul.o-listing-row li a')
+
+        if len(products_in_list) > 0:
+            lists.extend(products_in_list)
+
+        if len(products_in_row) > 0:
+            lists.extend(products_in_row)
+
+        for item in lists:
+            product_info = ProductInfo()
+            product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
+            product_itemloader.add_value('CategoryTreeId', category_id)
+            product_itemloader.add_value('Id', str(uuid.uuid4()))
+            product_itemloader.add_value('ProjectName', BOT_NAME)
+
+            product_itemloader.add_value('ProductUrl', self.main_url + item.css('::attr(href)').get())
+            product_itemloader.add_value('ProductName',
+                                         item.css('.m-product-listing__meta-title.f-body::text').get() +
+                                         ''.join(item.css('.m-product-listing__meta-title.f-body span::text').getall())
+                                         )
+            product_itemloader.add_value('Price', item.css('strong.f-body--em::text').get())
+            yield product_itemloader.load_item()
+        yield None
 
     headers_list = [
         # Chrome

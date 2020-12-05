@@ -29,8 +29,6 @@ class ProductInfo(scrapy.Item):
 class CategoryTree(scrapy.Item):
     Id = scrapy.Field()
     RootId = scrapy.Field()
-    ManufacturerId = scrapy.Field()
-    CategoryId = scrapy.Field()
 
     ProjectName = scrapy.Field()
     CategoryLevel1 = scrapy.Field()
@@ -40,8 +38,6 @@ class CategoryTree(scrapy.Item):
     CategoryLevel5 = scrapy.Field()
 
     Level_Url = scrapy.Field()
-    CreateDateTime = scrapy.Field()
-    UpdateDateTime = scrapy.Field()
 
 
 class Product(scrapy.Item):

@@ -8,6 +8,7 @@ from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
 from Celine.settings import BOT_NAME
 import json
+from string import Template
 
 
 class CelineRootTaskSpider(RedisSpider):
@@ -25,7 +26,7 @@ class CelineRootTaskSpider(RedisSpider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.celine.com/fr-fr/home",
+        formRequest = scrapy.FormRequest(url="https://www.celine.com/fr-fr/home",dont_filter=True,
                                          meta={'RootId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
@@ -36,107 +37,64 @@ class CelineRootTaskSpider(RedisSpider):
             self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
-        try:
-            success = response.status == 200
-            if success:
-                levels = self.generate_levels(response)
-                first = levels['1']
-                second = levels['2']
-                third = levels['3']
-                for item in third:
-                    level_two = ''
-                    level_one = ''
-                    for l in second:
-                        if level_two != '':
-                            for f in first:
-                                if l['DomParentId'] == f['DomId']:
-                                    level_one = f['Name']
-                                    break
-                            break
-                        else:
-                            for u in l['Urls']:
-                                if item['DomParentId'] == u['DomId']:
-                                    level_two = u['Name']
-                                    break
-                    if level_one == '':
-                        break
-
-                    for url in item['Urls']:
-                        category_tree = CategoryTree()
-                        category_itemloader = CategoryTreeItemLoader(item=category_tree, response=response)
-                        category_itemloader.add_value('Id', str(uuid.uuid4()))
-                        category_itemloader.add_value('RootId', response.meta['RootId'])
-                        if self.main_url not in url['Url']:
-                            category_itemloader.add_value('Level_Url', self.main_url + url['Url'])
-                        else:
-                            category_itemloader.add_value('Level_Url', url['Url'])
-
-                        category_itemloader.add_value('ProjectName', BOT_NAME)
-                        category_itemloader.add_value('CategoryLevel1', level_one)
-                        category_itemloader.add_value('CategoryLevel2', level_two)
-                        category_itemloader.add_value('CategoryLevel3', url['Name'])
-                        category_itemloader.add_value('CategoryLevel4', '')
-                        category_itemloader.add_value('CategoryLevel5', '')
-
-                        time = datetime.datetime.now().isoformat()
-                        category_itemloader.add_value('CreateDateTime', time)
-                        category_itemloader.add_value('UpdateDateTime', time)
-
-                        category_itemloader.add_value('ManufacturerId', 12)
-                        category_itemloader.add_value('CategoryId', 20)
-
-                        item_load = category_itemloader.load_item()
-
-                        yield item_load
-                        # yield scrapy.Request(url=item_load['Level_Url'], callback=self.getProducts, meta={
-                        #     'CategoryId': item_load['Id']
-                        # }, headers=random.choice(self.headers_list))
-
-        except Exception as err:
-            print(err)
+        success = response.status == 200
+        if success:
+            levels = self.generate_levels(response)
+            for node in levels:
+                print(node)
+                yield node
 
     def generate_levels(self, response):
-        levels = dict()
-        first = list()
-        second = list()
-        third = list()
-        for level in response.css('a.a-btn.a-btn--as-link[data-level="0"]'):
-            tree_level = TreeLevel()
-            tree_level['Level'] = level.css('::attr(data-level)').get()
-            tree_level['Name'] = level.css('::text').get()
-            tree_level['DomId'] = level.css('::attr(id)').get()
-            first.append(tree_level)
-        levels['1'] = first
+        results = list()
+        for level in response.css('a.a-btn.a-btn--as-link[data-level="0"]')[:2]:
+            s = Template('[aria-labelledby="${Level_Id}"]')
+            s_selector = s.substitute(Level_Id=level.css("::attr(id)").get())
 
-        for level in response.css('div[data-level="1"]'):
-            second_list = list()
-            tree_level = TreeLevel()
-            tree_level['Level'] = level.css('::attr(data-level)').get()
-            tree_level['DomParentId'] = level.css('::attr(aria-labelledby)').get()
-            tree_level['Urls'] = list(map(self.get_second_names, level.css('ul:first-of-type>li>a[data-level="1"]')))
-            second.append(tree_level)
-        levels['2'] = second
+            title_one_list = response.css('div[data-level="1"]' + s_selector + '>ul>li:not(.s-hide-on-desktop) a['
+                                                                               'data-level="1"]')
+            for title in title_one_list:
+                catrgory_tree_one = self.get_category_tree(
+                    title.css('::attr(href)').get(),
+                    level.css('::text').get(),
+                    title.css('::text').get(),
+                    '',
+                    response.meta['RootId']
+                )
+                results.append(catrgory_tree_one)
+            title_two_list = response.css('div[data-level="1"]' + s_selector + '>ul>li')
+            for item in title_two_list:
+                for li in item.css('ul>li:not(.s-hide-on-desktop)'):
+                    catrgory_tree_two = self.get_category_tree(
+                        li.css('a::attr(href)').get(),
+                        level.css('::text').get(),
+                        item.css('a:first-of-type::text').get(),
+                        li.css('a::text').get(),
+                        response.meta['RootId']
+                    )
+                    results.append(catrgory_tree_two)
 
-        for level in response.css('div[data-level="2"]'):
-            tree_level = TreeLevel()
-            tree_level['Level'] = level.css('::attr(data-level)').get()
-            tree_level['DomParentId'] = level.css('::attr(aria-labelledby)').get()
-            tree_level['Urls'] = list(map(self.get_level_urls, level.css('a')))
-            third.append(tree_level)
-        levels['3'] = third
-        return levels
+        return results
 
-    def get_level_urls(self, a):
-        level = dict()
-        level['Url'] = a.css('::attr(href)').get()
-        level['Name'] = a.css('::text').get()
-        return level
+    def get_category_tree(self, url, c_one, c_two, c_three='', c_rootId=''):
 
-    def get_second_names(self, a):
-        tree_level = TreeLevel()
-        tree_level['Name'] = a.css('::text').get()
-        tree_level['DomId'] = a.css('::attr(id)').get()
-        return tree_level
+        category_tree = CategoryTree()
+        category_itemloader = CategoryTreeItemLoader(item=category_tree)
+        category_itemloader.add_value('Id', str(uuid.uuid4()))
+        category_itemloader.add_value('RootId', c_rootId)
+        if self.main_url not in url:
+            category_itemloader.add_value('Level_Url', self.main_url + url)
+        else:
+            category_itemloader.add_value('Level_Url', url)
+
+        category_itemloader.add_value('ProjectName', BOT_NAME)
+        category_itemloader.add_value('CategoryLevel1', c_one)
+        category_itemloader.add_value('CategoryLevel2', c_two)
+        category_itemloader.add_value('CategoryLevel3', c_three)
+        category_itemloader.add_value('CategoryLevel4', '')
+        category_itemloader.add_value('CategoryLevel5', '')
+
+        item_load = category_itemloader.load_item()
+        return item_load
 
     headers_list = [
         # Chrome
