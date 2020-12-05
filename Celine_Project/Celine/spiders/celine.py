@@ -15,12 +15,14 @@ class CelineSpider(scrapy.Spider):
     def start_requests(self):
         urls = [
             "https://www.celine.com/fr-fr/home",
+            # "https://www.celine.com/fr-fr/celine-boutique-homme/parfums/",
+            # "https://www.celine.com/fr-fr/celine-boutique-femme/sacs/"
             # "https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/",
             # "https://www.celine.com/fr-fr/celine-boutique-femme/sacs/16/"
         ]
 
         for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, meta={
+            yield scrapy.Request(url=url, callback=self.getProducts, meta={
                         'Type': 'menu',
                     }, headers=random.choice(self.headers_list))
 
@@ -64,7 +66,10 @@ class CelineSpider(scrapy.Spider):
             product_itemloader.add_value('Id', str(uuid.uuid4()))
 
             product_itemloader.add_value('ProductUrl', self.main_url + item.css('::attr(href)').get())
-            product_itemloader.add_value('ProductName', item.css('.m-product-listing__meta-title.f-body::text').get())
+            product_itemloader.add_value('ProductName',
+                                         item.css('.m-product-listing__meta-title.f-body::text').get() +
+                                         ''.join(item.css('.m-product-listing__meta-title.f-body span::text').getall())
+                                         )
             product_itemloader.add_value('Price', item.css('strong.f-body--em::text').get())
 
             product_itemloader.add_value('Seconds', 60)

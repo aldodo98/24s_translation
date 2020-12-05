@@ -13,9 +13,12 @@ class ProductSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
-            "https://www.celine.com/fr-fr/celine-boutique-femme/parfums/cologne-francaise-eau-de-parfum-100ml-6PC1H0405.37TT.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/sacs/luggage/sac-luggage-nano-modele-en-veau-foulonne-189243DRU.38NO.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/chaussures/sandales/sandale-celine-triomphe-en-python-333684158C.28TA.html"
+            "https://www.celine.com/fr-fr/celine-boutique-femme/joaillerie/celine-sentimental/boucle-doreille-fleche-petit-modele-celine-sentimental-en-or-jaune-et-diamants-46P026GYD.37YW.html",
+            "https://www.celine.com/fr-fr/celine-boutique-homme/pret-a-porter/t-shirts-and-sweatshirts/short-brode-celine-coton-2Z063052H.38AW.html",
+            "https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/portefeuilles/grand-portefeuille-triomphe-toile-triomphe-10E312CPJ.04LU.html",
+            "https://www.celine.com/fr-fr/celine-boutique-femme/pret-a-porter/robes-and-jupes/jupe-midi-signature-agneau-2H149276D.28TA.html",
+            "https://www.celine.com/fr-fr/celine-boutique-femme/pret-a-porter/nouveautes/chemise-loose-crepe-de-chine-imprime-2C204763L.04VC.html",
+            "https://www.celine.com/fr-fr/celine-boutique-femme/chaussures/bottines/bottine-celine-saint-germain-des-pres-en-veau-brillant-327653002C.04CA.html"
         ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
@@ -48,7 +51,6 @@ class ProductSpider(scrapy.Spider):
                 'ImageThumbnailUrl',
                 self.get_thumbnail_url(img_lis))
             urls = img_lis.css('img::attr(data-src-zoom)').extract()
-            print(urls)
             # product_itemloader.add_value(
             #     'ImageUrls', list(urls))
 
@@ -59,7 +61,6 @@ class ProductSpider(scrapy.Spider):
             product_attributes = self.get_product_attributes(response)
             loadItem['ImageUrls'] = urls
             loadItem['ProductAttributes'] = product_attributes
-            print(loadItem['ImageUrls'])
             yield loadItem
 
     def get_product_name(self, response):
@@ -157,8 +158,8 @@ class ProductSpider(scrapy.Spider):
             variable_class_item_ioader = VariableClassItemLoader(item=attribute_variable, response=response)
             variable_class_item_ioader.add_value('DataCode', '')
             if is_perfume:
-                variable_class_item_ioader.add_value('NewPrice', self.get_prefume_price(item.css('::text').get()))
-                variable_class_item_ioader.add_value('Name', self.get_prefume_name(item.css('::text').get()))
+                variable_class_item_ioader.add_value('NewPrice', self.get_prefume_price(item.css('a::text').get()))
+                variable_class_item_ioader.add_value('Name', self.get_prefume_name(item.css('a::text').get()))
             else:
                 variable_class_item_ioader.add_value('NewPrice', response.css('span.o-product__title-price.prices strong::text').get())
                 variable_class_item_ioader.add_value('Name', item.css('::text').get())
@@ -178,7 +179,7 @@ class ProductSpider(scrapy.Spider):
         return result
 
     def get_color_variables(self, response):
-        list = response.css('#dd_productColour a')
+        list = response.css('#dd_productColour li')
         result = []
         for item in list:
             attribute_variable = VariableClass()
@@ -187,7 +188,7 @@ class ProductSpider(scrapy.Spider):
             variable_class_item_loader.add_value('NewPrice', response.css('span.o-product__title-price.prices strong::text').get())
             variable_class_item_loader.add_value('OldPrice', '')
 
-            variable_class_item_loader.add_value('Name', item.css('::text').get())
+            variable_class_item_loader.add_value('Name', ''.join(item.css('a::text').getall()))
             variable_class_item_loader.add_value('ColorSquaresRgb', self.main_url + item.css('img::attr(src)').get())
             variable_class_item_loader.add_value('DisplayColorSquaresRgb', False)
             variable_class_item_loader.add_value('PriceAdjustment', 0)
@@ -202,6 +203,7 @@ class ProductSpider(scrapy.Spider):
         return result
 
     def get_prefume_price(self, text):
+        print(text)
         return text.split('-')[1]
 
     def get_prefume_name(self, text):
