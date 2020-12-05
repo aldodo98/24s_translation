@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'Celine'
+BOT_NAME = 'Maje'
 
-SPIDER_MODULES = ['Celine.spiders']
-NEWSPIDER_MODULE = 'Celine.spiders'
+SPIDER_MODULES = ['Maje.spiders']
+NEWSPIDER_MODULE = 'Maje.spiders'
 
 DOWNLOAD_DELAY = 3
 
@@ -19,32 +19,15 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
-# Enables scheduling storing requests queue in redis.
-SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-
-# Ensure all spiders share same duplicates filter through redis.
-DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-
-SCHEDULER_PERSIST = True
-FEED_EXPORT_ENCODING = 'utf-8'
-REDIS_URL = 'redis://20.73.190.69:6379'
 ITEM_PIPELINES = {
-   'Celine.pipelines.RedisPipeline': 300,
-}
-
-# SPIDER_MIDDLEWARES = {
-#    'Celine.middlewares.CelineSpiderMiddleware': 543,
-# }
-
-DOWNLOADER_MIDDLEWARES = {
-   'Celine.middlewares.CelineDownloaderMiddleware': 543,
+   'Maje.pipelines.JsonPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'Celine (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -71,11 +54,15 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+#SPIDER_MIDDLEWARES = {
+#    'Celine.middlewares.CelineSpiderMiddleware': 543,
+#}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-
+# DOWNLOADER_MIDDLEWARES = {
+#    'Maje.middlewares.MajeDownloaderMiddleware': 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
