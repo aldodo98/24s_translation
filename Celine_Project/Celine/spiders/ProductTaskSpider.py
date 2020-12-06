@@ -1,27 +1,43 @@
 import scrapy
 import random
+from Celine.items import Product
+from Celine.itemloader import ProductItemLoader
+from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
+import json
+from Celine.settings import BOT_NAME
+from datetime import datetime
 # import datetime
 from datetime import datetime
 from Celine.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
 from Celine.itemloader import ProductItemLoader, VariableClassItemLoader
 
 
-class ProductSpider(scrapy.Spider):
-    name = 'product'
+
+class ProductTaskSpider(RedisSpider):
+    name = 'ProductTaskSpider'
+    redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.celine.com']
     main_url = "https://www.celine.com"
 
-    def start_requests(self):
-        urls = [
-            "https://www.celine.com/fr-fr/celine-boutique-femme/joaillerie/celine-sentimental/boucle-doreille-fleche-petit-modele-celine-sentimental-en-or-jaune-et-diamants-46P026GYD.37YW.html",
-            "https://www.celine.com/fr-fr/celine-boutique-homme/pret-a-porter/t-shirts-and-sweatshirts/short-brode-celine-coton-2Z063052H.38AW.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/portefeuilles/grand-portefeuille-triomphe-toile-triomphe-10E312CPJ.04LU.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/pret-a-porter/robes-and-jupes/jupe-midi-signature-agneau-2H149276D.28TA.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/pret-a-porter/nouveautes/chemise-loose-crepe-de-chine-imprime-2C204763L.04VC.html",
-            "https://www.celine.com/fr-fr/celine-boutique-femme/chaussures/bottines/bottine-celine-saint-germain-des-pres-en-veau-brillant-327653002C.04CA.html"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProductTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['ProductUrl'], dont_filter=True,
+                                         meta={'TaskId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
         try:
@@ -34,7 +50,7 @@ class ProductSpider(scrapy.Spider):
         product['Success'] = response.status == 200
         if response.status == 200:
             product_itemloader = ProductItemLoader(item=product, response=response)
-            product_itemloader.add_value('TaskId', 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+            product_itemloader.add_value('TaskId', response.meta['TaskId'])
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
 
@@ -59,7 +75,7 @@ class ProductSpider(scrapy.Spider):
             loadItem = product_itemloader.load_item()
 
             product_attributes = self.get_product_attributes(response)
-            loadItem['ImageUrls'] = urls
+            loadItem['ImageUrls'] = ','.join(urls)
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem
 

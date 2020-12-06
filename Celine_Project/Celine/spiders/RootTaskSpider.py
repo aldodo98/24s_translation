@@ -2,86 +2,47 @@ import scrapy
 import datetime
 import uuid
 import random
-from string import Template
 from Celine.items import CategoryTree, ProductInfo, TreeLevel
 from Celine.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
+from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
+from Celine.settings import BOT_NAME
+import json
+from string import Template
 
 
-class CelineSpider(scrapy.Spider):
-    name = 'celine'
-    allowed_domains = ['www.celine.com']
+class CelineRootTaskSpider(RedisSpider):
+    name = "RootTaskSpider"
+    redis_key = BOT_NAME+':RootTaskSpider'
     main_url = "https://www.celine.com"
+    allowed_domains = ['www.celine.com']
 
-    def start_requests(self):
-        urls = [
-            "https://www.celine.com/fr-fr/home",
-            # "https://www.celine.com/fr-fr/celine-boutique-homme/parfums/",
-            # "https://www.celine.com/fr-fr/celine-boutique-femme/sacs/"
-            # "https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/",
-            # "https://www.celine.com/fr-fr/celine-boutique-femme/sacs/16/"
-        ]
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(CelineRootTaskSpider, self).__init__(*args, **kwargs)
 
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.getProducts, meta={
-                        'Type': 'menu',
-                    }, headers=random.choice(self.headers_list))
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url="https://www.celine.com/fr-fr/home",dont_filter=True,
+                                         meta={'RootId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
-        try:
-            return self.parseP(response=response)
-        except Exception as err:
-            print(err)
-
-    def parseP(self, response):
         success = response.status == 200
         if success:
             levels = self.generate_levels(response)
-
-
             for node in levels:
                 print(node)
                 yield node
-                yield scrapy.Request(url=node['Level_Url'], callback=self.getProducts, meta={
-                            'CategoryId': node['Id'],
-                            'Type': 'product'
-                        }, headers=random.choice(self.headers_list))
-
-    def getProducts(self, response):
-        category_id = response.meta['CategoryId']
-        # lists = response.css('ul.o-listing-grid li a')
-        lists = list()
-        products_in_list = response.css('ul.o-listing-grid li a')
-        products_in_row = response.css('ul.o-listing-row li a')
-
-        if len(products_in_list) > 0:
-            lists.extend(products_in_list)
-
-        if len(products_in_row) > 0:
-            lists.extend(products_in_row)
-
-        for item in lists:
-            product_info = ProductInfo()
-            product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
-            product_itemloader.add_value('CategoryTreeId', category_id)
-            product_itemloader.add_value('Id', str(uuid.uuid4()))
-
-            product_itemloader.add_value('ProductUrl', self.main_url + item.css('::attr(href)').get())
-            product_itemloader.add_value('ProductName',
-                                         item.css('.m-product-listing__meta-title.f-body::text').get() +
-                                         ''.join(item.css('.m-product-listing__meta-title.f-body span::text').getall())
-                                         )
-            product_itemloader.add_value('Price', item.css('strong.f-body--em::text').get())
-
-            product_itemloader.add_value('Seconds', 60)
-            product_itemloader.add_value('Enabled', 0)
-            product_itemloader.add_value('Status', 'Running')
-
-            yield product_itemloader.load_item()
-
-    def getLevels(self, url):
-        level_list = url.split('/')
-        level_list = level_list + [None] * (6 - len(level_list))
-        return level_list
 
     def generate_levels(self, response):
         results = list()
@@ -96,6 +57,8 @@ class CelineSpider(scrapy.Spider):
                     title.css('::attr(href)').get(),
                     level.css('::text').get(),
                     title.css('::text').get(),
+                    '',
+                    response.meta['RootId']
                 )
                 results.append(catrgory_tree_one)
             title_two_list = response.css('div[data-level="1"]' + s_selector + '>ul>li')
@@ -105,38 +68,33 @@ class CelineSpider(scrapy.Spider):
                         li.css('a::attr(href)').get(),
                         level.css('::text').get(),
                         item.css('a:first-of-type::text').get(),
-                        li.css('a::text').get()
+                        li.css('a::text').get(),
+                        response.meta['RootId']
                     )
                     results.append(catrgory_tree_two)
 
         return results
 
-    def get_category_tree(self, url, c_one, c_two, c_three=''):
+    def get_category_tree(self, url, c_one, c_two, c_three='', c_rootId=''):
 
         category_tree = CategoryTree()
         category_itemloader = CategoryTreeItemLoader(item=category_tree)
         category_itemloader.add_value('Id', str(uuid.uuid4()))
+        category_itemloader.add_value('RootId', c_rootId)
         if self.main_url not in url:
             category_itemloader.add_value('Level_Url', self.main_url + url)
         else:
             category_itemloader.add_value('Level_Url', url)
 
+        category_itemloader.add_value('ProjectName', BOT_NAME)
         category_itemloader.add_value('CategoryLevel1', c_one)
         category_itemloader.add_value('CategoryLevel2', c_two)
         category_itemloader.add_value('CategoryLevel3', c_three)
         category_itemloader.add_value('CategoryLevel4', '')
         category_itemloader.add_value('CategoryLevel5', '')
 
-        time = datetime.datetime.now().isoformat()
-        category_itemloader.add_value('CreateDateTime', time)
-        category_itemloader.add_value('UpdateDateTime', time)
-
-        category_itemloader.add_value('ManufacturerId', 12)
-        category_itemloader.add_value('CategoryId', 20)
-
         item_load = category_itemloader.load_item()
         return item_load
-
 
     headers_list = [
         # Chrome

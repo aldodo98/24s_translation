@@ -82,29 +82,33 @@ class ScrapytestDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        try:
-            self.driver = webdriver.Chrome(options=chrome_options)
-            # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
-            self.driver.get(request.url)
-            # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
-            if self.isElementExist('p.product-titles-ref'):
-                locator = (By.CSS_SELECTOR, 'div.product-actions__price span.price-line')
-                WebDriverWait(self.driver, 20, 0.5).until(EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 20s
-                return HtmlResponse(url=request.url,
-                                    body=self.driver.page_source,
-                                    request=request,
-                                    encoding='utf-8',
-                                    status=200)
-            else:
-                return HtmlResponse(url=request.url,
-                                    body=self.driver.page_source,
-                                    request=request,
-                                    encoding='utf-8',
-                                    status=200)
-        except TimeoutException:
-            return HtmlResponse(url=request.url, status=500, request=request)
-        finally:
-            self.driver.close()
+        if (spider.name == 'diorProductScrapy'):
+
+            try:
+                self.driver = webdriver.Chrome(options=chrome_options)
+                # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
+                self.driver.get(request.url)
+                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
+                if self.isElementExist('p.product-titles-ref'):
+                    locator = (By.CSS_SELECTOR, 'div.product-actions__price span.price-line')
+                    WebDriverWait(self.driver, 20, 0.5).until(EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 20s
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
+                else:
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
+            except TimeoutException:
+                return HtmlResponse(url=request.url, status=500, request=request)
+            finally:
+                self.driver.close()
+        else:
+            return None
         # Called for each request that goes through the downloader
         # middleware.
 
