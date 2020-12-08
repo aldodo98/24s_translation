@@ -13,17 +13,25 @@ from Celine.items import Product, AttributeBasicInfoClass, MappingClass, Product
 from Celine.itemloader import ProductItemLoader, VariableClassItemLoader
 
 
-
 class ProductTaskSpider(RedisSpider):
+    # class ProductTaskSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.celine.com']
     main_url = "https://www.celine.com"
 
+    # start_urls = [
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/coffret-1-parfum-de-200ml-en-toile-triomphe-et-veau-naturel-4M0222AB5.04LU.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/eau-de-californie-eau-de-parfum-200ml-6PC1N0605.37TT.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/sacs/luggage/sac-luggage-nano-modele-veau-foulonne-189243DRU.33AC.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/autres/bijou-de-sac-losange-en-veau-naturel-10F153CG5.04LU.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-homme/chaussures/sneakers/sneaker-montante--inchz-inch-trainer-ct-01-veau-342813338C.38AB.html'
+    # ]
+
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    def __init__(self, *args, **kwargs):
-        # 修改这里的类名为当前类名
-        super(ProductTaskSpider, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     # 修改这里的类名为当前类名
+    #     super(ProductTaskSpider, self).__init__(*args, **kwargs)
 
     def make_request_from_data(self, data):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
@@ -50,7 +58,9 @@ class ProductTaskSpider(RedisSpider):
         product['Success'] = response.status == 200
         if response.status == 200:
             product_itemloader = ProductItemLoader(item=product, response=response)
-            product_itemloader.add_value('TaskId', response.meta['TaskId'])
+            # product_itemloader.add_value('TaskId', response.meta['TaskId'])
+            product_itemloader.add_value('TaskId', 'XXXXXXXXXX')
+
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
 
@@ -174,10 +184,14 @@ class ProductTaskSpider(RedisSpider):
             variable_class_item_ioader = VariableClassItemLoader(item=attribute_variable, response=response)
             variable_class_item_ioader.add_value('DataCode', '')
             if is_perfume:
-                variable_class_item_ioader.add_value('NewPrice', self.get_prefume_price(item.css('a::text').get()))
-                variable_class_item_ioader.add_value('Name', self.get_prefume_name(item.css('a::text').get()))
+                global_price = response.css('span.o-product__title-price.prices strong::text').get()
+                new_price = self.get_prefume_price(item.css('a::text').get()) or global_price
+                variable_class_item_ioader.add_value('NewPrice', new_price)
+                variable_class_item_ioader.add_value('Name',
+                                                     self.get_prefume_name(''.join(item.css('a::text').getall())))
             else:
-                variable_class_item_ioader.add_value('NewPrice', response.css('span.o-product__title-price.prices strong::text').get())
+                variable_class_item_ioader.add_value('NewPrice', response.css(
+                    'span.o-product__title-price.prices strong::text').get())
                 variable_class_item_ioader.add_value('Name', item.css('::text').get())
 
             variable_class_item_ioader.add_value('OldPrice', '')
@@ -201,7 +215,8 @@ class ProductTaskSpider(RedisSpider):
             attribute_variable = VariableClass()
             variable_class_item_loader = VariableClassItemLoader(item=attribute_variable, response=response)
             variable_class_item_loader.add_value('DataCode', '')
-            variable_class_item_loader.add_value('NewPrice', response.css('span.o-product__title-price.prices strong::text').get())
+            variable_class_item_loader.add_value('NewPrice',
+                                                 response.css('span.o-product__title-price.prices strong::text').get())
             variable_class_item_loader.add_value('OldPrice', '')
 
             variable_class_item_loader.add_value('Name', ''.join(item.css('a::text').getall()))
@@ -218,11 +233,14 @@ class ProductTaskSpider(RedisSpider):
             result.append(loadItem)
         return result
 
-    def get_prefume_price(self, text):
-        print(text)
+    @staticmethod
+    def get_prefume_price(text):
+        if text.replace('\n', '').strip() == '':
+            return False
         return text.split('-')[1]
 
-    def get_prefume_name(self, text):
+    @staticmethod
+    def get_prefume_name(text):
         return text.split('-')[0]
 
     headers_list = [
