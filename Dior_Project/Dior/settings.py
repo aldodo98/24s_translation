@@ -25,7 +25,7 @@ MYSQL_PASSWORD = 'root'
 ROBOTSTXT_OBEY = True
 
 ITEM_PIPELINES = {
-   'Dior.pipelines.DiorPipeline': 300,
+   'Dior.pipelines.ScrapytestPipeline': 300,
 }
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
@@ -53,15 +53,15 @@ ITEM_PIPELINES = {
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'Dior.middlewares.DiorSpiderMiddleware': 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'Dior.middlewares.DiorDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'Dior.middlewares.DiorDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

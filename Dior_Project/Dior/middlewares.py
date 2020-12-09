@@ -4,9 +4,17 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+from scrapy.http import HtmlResponse
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from time import sleep
 
 
 class DiorSpiderMiddleware:
@@ -69,16 +77,36 @@ class DiorDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
-        return None
+        if (spider.name == 'ProductTaskSpider'):
+            chrome_options = Options()
+            # chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--disable-gpu')
+            try:
+                self.driver = webdriver.Chrome(options=chrome_options)
+                # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
+                self.driver.get(request.url)
+                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
+                if self.isElementExist('p.product-titles-ref'):
+                    locator = (By.CSS_SELECTOR, 'div.product-actions__price span.price-line')
+                    WebDriverWait(self.driver, 10, 0.5).until(
+                        EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 10s
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
+                else:
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
+            except TimeoutException:
+                return HtmlResponse(url=request.url, status=500, request=request)
+            finally:
+                self.driver.close()
+        else:
+            return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
@@ -101,3 +129,13 @@ class DiorDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+    def isElementExist(self, element):
+        flag = True
+        browser = self.driver
+        try:
+            browser.find_element_by_css_selector(element)
+            return flag
+        except:
+            flag = False
+            return flag
