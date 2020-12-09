@@ -38,6 +38,8 @@ class CategoryTree(scrapy.Item):
     Level_Url = scrapy.Field()
     CreateDateTime = scrapy.Field()
     UpdateDateTime = scrapy.Field()
+    RootId = scrapy.Field()
+    ProjectName = scrapy.Field()
 
 class Product(scrapy.Item):
     TaskId = scrapy.Field()
@@ -89,4 +91,13 @@ class VariableClass(scrapy.Item):
     DisplayOrder = scrapy.Field()
     DisplayImageSquaresPicture = scrapy.Field()
     PictureUrlInStorage = scrapy.Field()
+
+class TreeLevel(scrapy.Item):
+    Id = scrapy.Field()
+    Level = scrapy.Field()
+    Name = scrapy.Field()
+    Names = scrapy.Field()
+    DomId = scrapy.Field()
+    DomParentId = scrapy.Field()
+    Urls = scrapy.Field()
 

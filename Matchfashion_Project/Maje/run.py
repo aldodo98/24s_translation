@@ -1,3 +1,3 @@
 from scrapy import cmdline
 
-cmdline.execute('scrapy crawl majeProductScrapy'.split())
+cmdline.execute('scrapy crawl RootTaskSpider'.split())
