@@ -2,23 +2,24 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+
 from time import sleep
 from scrapy import signals
 from scrapy.http import HtmlResponse
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
+from itemadapter import is_item, ItemAdapter
 
 
 chrome_options=Options()
 # chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
 
 
-class CelineSpiderMiddleware:
+class PowersanteSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -65,7 +66,7 @@ class CelineSpiderMiddleware:
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class CelineDownloaderMiddleware:
+class PowersanteDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.

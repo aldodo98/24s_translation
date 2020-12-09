@@ -58,8 +58,8 @@ class ProductTaskSpider(RedisSpider):
         product['Success'] = response.status == 200
         if response.status == 200:
             product_itemloader = ProductItemLoader(item=product, response=response)
-            # product_itemloader.add_value('TaskId', response.meta['TaskId'])
-            product_itemloader.add_value('TaskId', 'XXXXXXXXXX')
+            product_itemloader.add_value('TaskId', response.meta['TaskId'])
+            # product_itemloader.add_value('TaskId', 'XXXXXXXXXX')
 
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
