@@ -1,17 +1,17 @@
 import request from '@/utils/request'
-
+const BACKEND_API_BASE_URL = 'https://haiwa-crawl-funcs-labs.azurewebsites.net'
 const api = {
   user: '/user',
   role: '/role',
-  rootTask: 'http://localhost:7071/api/RootTask',
-  runRootTask: 'http://localhost:7071/api/RunRootTask',
-  categoryTreeTask: 'http://localhost:7071/api/CategoryTreeTask',
-  enableCategoryTreeTasks: 'http://localhost:7071/api/EnableCategoryTreeTasks',
-  updateCategoryAndManufactoryIdForTasks: 'http://localhost:7071/api/UpdateCategoryAndManufactoryIdForTasks',
-  runCategoryTreeTasks: 'http://localhost:7071/api/RunCategoryTreeTasks',
-  productTask: 'http://localhost:7071/api/ProductTask',
-  enableProductTasks: 'http://localhost:7071/api/EnableProductTasks',
-  runProductTasks: 'http://localhost:7071/api/RunProductTasks',
+  rootTask: BACKEND_API_BASE_URL + '/api/RootTask',
+  runRootTask: BACKEND_API_BASE_URL + '/api/RunRootTask',
+  categoryTreeTask: BACKEND_API_BASE_URL + '/api/CategoryTreeTask',
+  enableCategoryTreeTasks: BACKEND_API_BASE_URL + '/api/EnableCategoryTreeTasks',
+  updateCategoryAndManufactoryIdForTasks: BACKEND_API_BASE_URL + '/api/UpdateCategoryAndManufactoryIdForTasks',
+  runCategoryTreeTasks: BACKEND_API_BASE_URL + '/api/RunCategoryTreeTasks',
+  productTask: BACKEND_API_BASE_URL + '/api/ProductTask',
+  enableProductTasks: BACKEND_API_BASE_URL + '/api/EnableProductTasks',
+  runProductTasks: BACKEND_API_BASE_URL + '/api/RunProductTasks',
   permission: '/permission',
   permissionNoPager: '/permission/no-pager',
   orgTree: '/org/tree'
