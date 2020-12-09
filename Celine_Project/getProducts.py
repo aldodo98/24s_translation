@@ -26,7 +26,7 @@ class SelectMySQL():
         new_result = list(result)
         for t_new_result in new_result:
             with open('products.json', 'a+', encoding='utf-8') as f:
-                f.write(str(t_new_result[0]))
+                f.write(t_new_result[0])
 
         conn.commit()
         conn.close()
