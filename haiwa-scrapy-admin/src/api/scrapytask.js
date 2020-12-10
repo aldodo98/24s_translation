@@ -1,5 +1,7 @@
 import request from '@/utils/request'
-const BACKEND_API_BASE_URL = 'https://haiwa-crawl-funcs-labs.azurewebsites.net'
+import configs from '@/config/env'
+
+const BACKEND_API_BASE_URL = configs.production.WEB_API_SERVICES
 const api = {
   user: '/user',
   role: '/role',
