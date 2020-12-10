@@ -6,3 +6,7 @@ services:
     container_name: "ant-design-pro_build"
     volumes:
       - dist:/usr/src/app/dist
+
+
+volumes:
+  dist:      
