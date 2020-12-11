@@ -1,10 +1,3 @@
-FROM circleci/node:latest-browsers
-
-WORKDIR /usr/src/app/
-USER root
-COPY package.json ./
-RUN yarn install
-
-COPY ./ ./
-
-CMD ["npm", "run", "build"]
+FROM nginx
+COPY dist/ /usr/share/nginx/html/
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
