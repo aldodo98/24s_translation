@@ -133,6 +133,7 @@
         beforeMount () {
             this.columnDefs = [
                 { headerName: 'id', field: 'id', checkboxSelection: true, width: '150', headerCheckboxSelection: true },
+                { headerName: 'ProductId', field: 'productId', filter: true, width: '150' },
                 { headerName: 'Enabled', field: 'enabled', filter: true },
                 { headerName: 'Task Status', field: 'taskStatus', filter: true },
                 { headerName: 'project', field: 'projectName', width: '100', filter: true },
