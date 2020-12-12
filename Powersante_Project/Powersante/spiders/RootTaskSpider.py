@@ -1,18 +1,35 @@
 import scrapy
+import datetime
+import uuid
+import random
+from Powersante.items import CategoryTree, ProductInfo
+from Powersante.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
+from Powersante.settings import BOT_NAME
 
 
 class RoottaskspiderSpider(scrapy.Spider):
     name = 'RootTaskSpider'
+    redis_key = BOT_NAME+':RootTaskSpider'
     allowed_domains = ['www.powersante.com']
     start_urls = ['http://www.powersante.com/']
 
     def start_requests(self):
         urls = [
             "https://www.powersante.com",
-            # "https://www.powersante.com/parfum-maquillage/ongles/soins-des-ongles/"
+            # "https://www.powersante.com/bebe-maman/grossesse-allaitement/tests-d-ovulation-et-tests-de-grossesse/",
+            # 'https://www.powersante.com/visage/peaux-sensibles-et-atopiques/lotions-toniques/'
+            # "https://www.powersante.com/parfum-maquillage/ongles/soins-des-ongles/",
+            # 'https://www.powersante.com/visage/nettoyants-demaquillants/laits-huiles/#q=&idx=magento_default_products'
+            # '&hFR%5Bcategories.level0%5D%5B0%5D=Visage%20%2F%2F%2F%20Nettoyants%20%26%20D%C3%A9maquillants%20%2F%2F'
+            # '%2F%20Laits%20%26%20Huiles&is_v=1 '
         ]
         for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
+                'RootId': '1'
+            })
+            # yield scrapy.Request(url=url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
+            #     'CategoryId': '1'
+            # })
 
     def parse(self, response):
         try:
@@ -28,41 +45,62 @@ class RoottaskspiderSpider(scrapy.Spider):
 
             for ele in cate_list_1:
                 cate_1 = ele.css('a::text').get()  # 一级目录
-                url_1 = ele.css('a::attr(href)').get()  # 一级目录商品url
+                # url_1 = ele.css('a::attr(href)').get()  # 一级目录商品url
                 ele_list_2 = ele.css('.section>.section_inner>ul>li:not(.back):not(.title):not(.all)')  # 二级目录元素列表
-                yield self.getCategoryItem(response, cate_1, None, None, url_1)
+                # yield self.getCategoryItem(
+                #     cate_1,
+                #     None,
+                #     None,
+                #     url_1,
+                #     response.meta['RootId']
+                # )
 
                 for _ele in ele_list_2:
                     cate_2 = _ele.css('a::text').get()  # 二级目录
                     url_2 = _ele.css('a::attr(href)').get()  # 二级目录商品url
                     cate_list_3 = _ele.css('.section>ul>li:not(.back):not(.title):not(.all)')  # 三级目录列表
-                    yield self.getCategoryItem(response, cate_1, cate_2, None, url_2)
+                    yield self.getCategoryItem(
+                        cate_1,
+                        cate_2,
+                        None,
+                        url_2,
+                        response.meta['RootId']
+                    )
 
                     for __ele in cate_list_3:
                         cate_3 = __ele.css('a::text').get()  # 三级目录
                         url_3 = __ele.css('a::attr(href)').get()  # 商品url
-                        item_load = self.getCategoryItem(response, cate_1, cate_2, cate_3, url_3)
+                        item_load = self.getCategoryItem(
+                            cate_1,
+                            cate_2,
+                            cate_3,
+                            url_3,
+                            response.meta['RootId']
+                        )
                         yield item_load
                         yield scrapy.Request(url=url_3, callback=self.getProducts, meta={
                             'CategoryId': item_load['Id'],
                         }, headers=random.choice(self.headers_list))
 
-    def getCategoryItem(self, response, cate_1, cate_2, cate_3, url):
+    def getCategoryItem(self, cate_1, cate_2, cate_3, url, c_rootId=''):
         category_tree = CategoryTree()
-        category_itemloader = CategoryTreeItemLoader(item=category_tree, response=response)
+        category_itemloader = CategoryTreeItemLoader(item=category_tree)
         category_itemloader.add_value('Id', str(uuid.uuid4()))
 
+        category_itemloader.add_value('ProjectName', BOT_NAME)
         category_itemloader.add_value('Level_Url', url)
         category_itemloader.add_value('CategoryLevel1', cate_1)
         category_itemloader.add_value('CategoryLevel2', cate_2)
         category_itemloader.add_value('CategoryLevel3', cate_3)
 
         time = datetime.datetime.now().isoformat()
-        category_itemloader.add_value('CreateDateTime', time)
-        category_itemloader.add_value('UpdateDateTime', time)
+        # category_itemloader.add_value('CreateDateTime', time)
+        # category_itemloader.add_value('UpdateDateTime', time)
 
-        category_itemloader.add_value('ManufacturerId', 12)
-        category_itemloader.add_value('CategoryId', 20)
+        category_itemloader.add_value('RootId', c_rootId)
+
+        # category_itemloader.add_value('ManufacturerId', 12)
+        # category_itemloader.add_value('CategoryId', 20)
 
         item_load = category_itemloader.load_item()
 
@@ -70,10 +108,11 @@ class RoottaskspiderSpider(scrapy.Spider):
 
     # 获取商品
     def getProducts(self, response):
+        if response.status != 200:
+            return
         category_id = response.meta['CategoryId']
-        # lists = response.css('ul#instant-search-results-container>li') # 加id无效
-        lists = response.css('.products-holder>ul>li')
-
+        lists = response.css('ul#instant-search-results-container>li')
+        print(len(lists))
         for item in lists:
             product_info = ProductInfo()
             # 无折扣
@@ -103,10 +142,8 @@ class RoottaskspiderSpider(scrapy.Spider):
             product_itemloader.add_value('ProductId', item.css('::attr(data-id)').get())
             product_itemloader.add_value('ProductUrl', item.css('h2.product-info>a::attr(href)').get())
             product_itemloader.add_value('ProductName', product_name)
+            product_itemloader.add_value('ProjectName', BOT_NAME)
             product_itemloader.add_value('Price', regular_price or special_price)
-            product_itemloader.add_value('Seconds', 60)
-            product_itemloader.add_value('Enabled', 0)
-            product_itemloader.add_value('Status', 'Running')
 
             yield product_itemloader.load_item()
 
