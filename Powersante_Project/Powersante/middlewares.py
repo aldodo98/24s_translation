@@ -84,12 +84,7 @@ class PowersanteDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        print(request.meta, 8888888888888888888)
-        if 'RootId' in request.meta:
-            return None
-        if spider.name == 'RootTaskSpider':
-            if 'Type' in request.meta and request.meta['Type'] == 'menu':
-                return None
+        if spider.name == 'GetProductListTaskSpider':
             try:
                 print(request)
                 self.driver = webdriver.Chrome(options=chrome_options)

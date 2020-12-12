@@ -1,36 +1,38 @@
 import scrapy
 import random
-from Powersante.items import Product
-from Powersante.itemloader import ProductItemLoader
+# from Powersante.items import Product
+# from Powersante.itemloader import ProductItemLoader
 from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
 import json
+import re
 from Powersante.settings import BOT_NAME
-from datetime import datetime
+# from datetime import datetime
 # import datetime
 from datetime import datetime
 from Powersante.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
 from Powersante.itemloader import ProductItemLoader, VariableClassItemLoader
 
 
-class ProducttaskspiderSpider(scrapy.Spider):
+class ProducttaskspiderSpider(RedisSpider):
+# class ProducttaskspiderSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.powersante.com']
 
-    start_urls = [
-        # 'https://www.powersante.com/caudalie-lotion-tonique-hydratante-200ml-26715.html',
-        # 'https://www.powersante.com/l-essuie-fraise-lingettes-intimes-homme-6-unites.html',
-        # 'https://www.powersante.com/sante-verte-coffret-3-mois-inecla-beaute-des-cheveux-3-x-60-comprimes.html',
-        'https://www.powersante.com/listerine-bain-de-bouche-fraicheur-intense-500ml.html?queryID=d7e5045d42f9abb046fd5eae6beaf103&objectID=28009&indexName=magento_default_products',
-        # 'https://www.powersante.com/protidiet-gruau-arome-nature-5-sachets.html',
-        # 'https://www.powersante.com/a-derma-exomega-control-baume-emollient-400ml.html'
-    ]
+    # start_urls = [
+    #     'https://www.powersante.com/caudalie-lotion-tonique-hydratante-200ml-26715.html',
+    #     'https://www.powersante.com/l-essuie-fraise-lingettes-intimes-homme-6-unites.html',
+    #     'https://www.powersante.com/sante-verte-coffret-3-mois-inecla-beaute-des-cheveux-3-x-60-comprimes.html',
+    #     'https://www.powersante.com/listerine-bain-de-bouche-fraicheur-intense-500ml.html?queryID=d7e5045d42f9abb046fd5eae6beaf103&objectID=28009&indexName=magento_default_products',
+    #     'https://www.powersante.com/protidiet-gruau-arome-nature-5-sachets.html',
+    #     'https://www.powersante.com/a-derma-exomega-control-baume-emollient-400ml.html'
+    # ]
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(ProductTaskSpider, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProducttaskspiderSpider, self).__init__(*args, **kwargs)
 
     def make_request_from_data(self, data):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
@@ -57,8 +59,8 @@ class ProducttaskspiderSpider(scrapy.Spider):
         product['Success'] = response.status == 200
         if response.status == 200:
             product_itemloader = ProductItemLoader(item=product, response=response)
-            # product_itemloader.add_value('TaskId', response.meta['TaskId'])
-            product_itemloader.add_value('TaskId', 'XXXXXXXXXX')
+            product_itemloader.add_value('TaskId', response.meta['TaskId'])
+            # product_itemloader.add_value('TaskId', 'XXXXXXXXXX')
 
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
@@ -95,15 +97,10 @@ class ProducttaskspiderSpider(scrapy.Spider):
         return result
 
     def get_product_desc(self, response):
-        description = response.css(
-            'div.product_desc span::text').get()
-        sub_desc = response.css('div.product_desc span strong::text').get()
+        dr = re.compile(r'<[^>]+>', re.S)
+        dd = dr.sub('', response.css('div.product_desc p').get())
 
-        p_desc = response.css('div.product_desc p::text').get()
-
-        print(response.css('div.product_desc p').getall())
-
-        return (description or '') + (sub_desc or '') + (p_desc or '')
+        return dd
 
     def get_product_price(self, response):
         regular_big_price = response.css('.price-box>.regular-price>span::text').get()
