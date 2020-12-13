@@ -2,23 +2,22 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-from time import sleep
+
 from scrapy import signals
 from scrapy.http import HtmlResponse
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.chrome.options import Options
-
-
-chrome_options=Options()
-# chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-gpu')
-from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from time import sleep
 
 
-class CelineSpiderMiddleware:
+class DiorSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -65,7 +64,7 @@ class CelineSpiderMiddleware:
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class CelineDownloaderMiddleware:
+class DiorDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
@@ -78,35 +77,36 @@ class CelineDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        if spider.name == 'ProductTaskSpider':
-            if 'Type' in request.meta and request.meta['Type'] == 'menu':
-                return None
+        if (spider.name == 'ProductTaskSpider'):
+            chrome_options = Options()
+            # chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--disable-gpu')
             try:
-                print(request)
                 self.driver = webdriver.Chrome(options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
-                if self.is_element_exist('button#onetrust-accept-btn-handler'):
-                    self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
-                total_products_count = 0
-                while True and self.is_element_exist('ul.o-listing-grid li a'):
-                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-                    sleep(4)
-                    count = len(self.driver.find_elements_by_css_selector('ul.o-listing-grid li a'))
-                    if count == total_products_count:
-                        break
-                    total_products_count = count
-
-                return HtmlResponse(url=request.url,
-                                    body=self.driver.page_source,
-                                    request=request,
-                                    encoding='utf-8',
-                                    status=200)
+                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
+                if self.isElementExist('p.product-titles-ref'):
+                    locator = (By.CSS_SELECTOR, 'div.product-actions__price span.price-line')
+                    WebDriverWait(self.driver, 10, 0.5).until(
+                        EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 10s
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
+                else:
+                    return HtmlResponse(url=request.url,
+                                        body=self.driver.page_source,
+                                        request=request,
+                                        encoding='utf-8',
+                                        status=200)
             except TimeoutException:
                 return HtmlResponse(url=request.url, status=500, request=request)
             finally:
                 self.driver.close()
-        return None
+        else:
+            return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
@@ -130,7 +130,7 @@ class CelineDownloaderMiddleware:
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
 
-    def is_element_exist(self, element):
+    def isElementExist(self, element):
         flag = True
         browser = self.driver
         try:
