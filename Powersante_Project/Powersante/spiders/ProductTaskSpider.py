@@ -1,37 +1,38 @@
 import scrapy
 import random
-from Celine.items import Product
-from Celine.itemloader import ProductItemLoader
+# from Powersante.items import Product
+# from Powersante.itemloader import ProductItemLoader
 from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
 import json
-from Celine.settings import BOT_NAME
-from datetime import datetime
+import re
+from Powersante.settings import BOT_NAME
+# from datetime import datetime
 # import datetime
 from datetime import datetime
-from Celine.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
-from Celine.itemloader import ProductItemLoader, VariableClassItemLoader
+from Powersante.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
+from Powersante.itemloader import ProductItemLoader, VariableClassItemLoader
 
 
-class ProductTaskSpider(RedisSpider):
-    # class ProductTaskSpider(scrapy.Spider):
+class ProducttaskspiderSpider(RedisSpider):
+# class ProducttaskspiderSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
-    allowed_domains = ['www.celine.com']
-    main_url = "https://www.celine.com"
+    allowed_domains = ['www.powersante.com']
 
     # start_urls = [
-    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/coffret-1-parfum-de-200ml-en-toile-triomphe-et-veau-naturel-4M0222AB5.04LU.html',
-    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/eau-de-californie-eau-de-parfum-200ml-6PC1N0605.37TT.html',
-    #     'https://www.celine.com/fr-fr/celine-boutique-femme/sacs/luggage/sac-luggage-nano-modele-veau-foulonne-189243DRU.33AC.html',
-    #     'https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/autres/bijou-de-sac-losange-en-veau-naturel-10F153CG5.04LU.html',
-    #     'https://www.celine.com/fr-fr/celine-boutique-homme/chaussures/sneakers/sneaker-montante--inchz-inch-trainer-ct-01-veau-342813338C.38AB.html'
+    #     'https://www.powersante.com/caudalie-lotion-tonique-hydratante-200ml-26715.html',
+    #     'https://www.powersante.com/l-essuie-fraise-lingettes-intimes-homme-6-unites.html',
+    #     'https://www.powersante.com/sante-verte-coffret-3-mois-inecla-beaute-des-cheveux-3-x-60-comprimes.html',
+    #     'https://www.powersante.com/listerine-bain-de-bouche-fraicheur-intense-500ml.html?queryID=d7e5045d42f9abb046fd5eae6beaf103&objectID=28009&indexName=magento_default_products',
+    #     'https://www.powersante.com/protidiet-gruau-arome-nature-5-sachets.html',
+    #     'https://www.powersante.com/a-derma-exomega-control-baume-emollient-400ml.html'
     # ]
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(ProductTaskSpider, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProducttaskspiderSpider, self).__init__(*args, **kwargs)
 
     def make_request_from_data(self, data):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
@@ -64,66 +65,79 @@ class ProductTaskSpider(RedisSpider):
             product_itemloader.add_value('Name', self.get_product_name(response))
             product_itemloader.add_value('ShortDescription', '')
 
-            descriptions = response.css(
-                'div.o-product__description.o-body-copy p::text').extract()
-            product_itemloader.add_value('FullDescription', ''.join(descriptions))
+            product_itemloader.add_value('FullDescription', self.get_product_desc(response))
 
-            product_itemloader.add_value('Price', response.css('span.o-product__title-price.prices strong::text').get())
+            product_itemloader.add_value('Price', self.get_product_price(response))
             product_itemloader.add_value('OldPrice', '')
-
-            img_lis = response.css('div.o-product__imgs')
 
             product_itemloader.add_value(
                 'ImageThumbnailUrl',
-                self.get_thumbnail_url(img_lis))
-            urls = img_lis.css('img::attr(data-src-zoom)').extract()
-            # product_itemloader.add_value(
-            #     'ImageUrls', list(urls))
+                response.css('div#gallery img::attr(src)').get())
 
-            product_itemloader.add_value('LastChangeTime', datetime.utcnow())
+            # product_itemloader.add_value(
+            #     'ImageUrls', [])
+
+            product_itemloader.add_value('LastChangeTime', datetime.utcnow().isoformat())
             product_itemloader.add_value('HashCode', '')
             loadItem = product_itemloader.load_item()
-
+            # 暂时没有看到有选项的 size 或者 color 或者等等提供选项的
             product_attributes = self.get_product_attributes(response)
-            loadItem['ImageUrls'] = ','.join(urls)
+            loadItem['ImageUrls'] = self.get_img_urls(response)
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem
 
     def get_product_name(self, response):
         result = ''
-        title = response.css('span.o-product__title-truncate.f-body--em::text').get()
-        sub_title = response.css('span.o-product__title-truncate.f-body--em.s-multilines span')
+        title = response.css('div.price_note>h1>span::text').get()
+        sub_title = response.css('div.price_note>h1::text').get()
         if title is not None:
             result = title
         if sub_title is not None:
-            for sub in sub_title:
-                result += sub.css('::text').get()
+            result += sub_title
         return result
 
+    def get_product_desc(self, response):
+        dr = re.compile(r'<[^>]+>', re.S)
+        dd = dr.sub('', response.css('div.product_desc p').get())
+
+        return dd
+
+    def get_product_price(self, response):
+        regular_big_price = response.css('.price-box>.regular-price>span::text').get()
+        regular_small_price = response.css('.price-box>.regular-price>span>small::text').get()
+        if regular_small_price is not None:
+            regular_small_price = regular_small_price.replace(' ', '')
+        regular_price = (regular_big_price or '') + (regular_small_price or '')
+        return regular_price
+
     def get_thumbnail_url(self, response):
-        li = response[0]
-        # print(li.get(), 888888888888888888)
-        img_url = li.css('img::attr(data-src-zoom)').get()
-        # if img_url is None:
-        #     return li.css('video').xpath('@src').get()
+        img = response[0]
+        img_url = img.css('::attr(src)').get()
         return img_url
+
+    def get_img_urls(self, response):
+        urls = response.css('div#gallery_nav img')
+        if urls is not None:
+            return ','.join(urls.css('::attr(src)').extract())
+        else:
+            return ''
 
     def get_product_attributes(self, response):
         result = []
-        size_link_list = response.css('#dd_productSize li')
-        if len(size_link_list) > 0:
-            size_attr = self.get_size_attribute(response, is_perfume=False)
-            result.append(size_attr)
-
-        color_list = response.css('#dd_productColour li')
-        if len(color_list) > 0:
-            breadcrumb = response.css('.m-breadcrumb__items div')
-            if breadcrumb[2].css('a::text').get() == 'PARFUMS':
-                size_attr = self.get_size_attribute(response, is_perfume=True)
-                result.append(size_attr)
-            else:
-                color_attr = self.get_color_attribute(response)
-                result.append(color_attr)
+        # size_link_list = response.css('#dd_productSize li')
+        # if len(size_link_list) > 0:
+        #     size_attr = self.get_size_attribute(response, is_perfume=False)
+        #     result.append(size_attr)
+        #
+        # color_list = response.css('#dd_productColour li')
+        # if len(color_list) > 0:
+        #     breadcrumb = response.css('.m-breadcrumb__items div')
+        #     if breadcrumb[2].css('a::text').get() == 'PARFUMS':
+        #         size_attr = self.get_size_attribute(response, is_perfume=True)
+        #         result.append(size_attr)
+        #     else:
+        #         color_attr = self.get_color_attribute(response)
+        #         result.append(color_attr)
 
         return result
 

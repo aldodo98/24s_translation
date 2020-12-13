@@ -2,23 +2,29 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+
 from time import sleep
 from scrapy import signals
 from scrapy.http import HtmlResponse
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+from itemadapter import is_item, ItemAdapter
 
 
 chrome_options=Options()
 # chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
 
 
-class CelineSpiderMiddleware:
+class PowersanteSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -65,7 +71,7 @@ class CelineSpiderMiddleware:
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class CelineDownloaderMiddleware:
+class PowersanteDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
@@ -78,24 +84,20 @@ class CelineDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        if spider.name == 'ProductTaskSpider':
-            if 'Type' in request.meta and request.meta['Type'] == 'menu':
-                return None
+        if spider.name == 'GetProductListTaskSpider':
             try:
                 print(request)
                 self.driver = webdriver.Chrome(options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
-                if self.is_element_exist('button#onetrust-accept-btn-handler'):
-                    self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
-                total_products_count = 0
-                while True and self.is_element_exist('ul.o-listing-grid li a'):
-                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                locator = (By.CSS_SELECTOR, 'div#modal')
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located(locator))
+                # if self.is_element_exist('div.close.inner_close'):
+                self.driver.find_element_by_css_selector('div.close.inner_close').click()
+
+                while self.is_element_exist('a#instant-search-results-show-more'):
+                    self.driver.execute_script("document.getElementById('instant-search-results-show-more').click()")
                     sleep(4)
-                    count = len(self.driver.find_elements_by_css_selector('ul.o-listing-grid li a'))
-                    if count == total_products_count:
-                        break
-                    total_products_count = count
 
                 return HtmlResponse(url=request.url,
                                     body=self.driver.page_source,
@@ -134,7 +136,7 @@ class CelineDownloaderMiddleware:
         flag = True
         browser = self.driver
         try:
-            browser.find_element_by_css_selector(element)
+            flag = browser.find_element_by_css_selector(element).is_displayed()
             return flag
         except:
             flag = False
