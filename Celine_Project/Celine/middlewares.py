@@ -11,8 +11,10 @@ from selenium.webdriver.chrome.options import Options
 
 
 chrome_options=Options()
-# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -78,12 +80,12 @@ class CelineDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        if spider.name == 'celine':
+        if spider.name == 'GetTreeProductListTaskSpider':
             if 'Type' in request.meta and request.meta['Type'] == 'menu':
                 return None
             try:
                 print(request)
-                self.driver = webdriver.Chrome(options=chrome_options)
+                self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 if self.is_element_exist('button#onetrust-accept-btn-handler'):
