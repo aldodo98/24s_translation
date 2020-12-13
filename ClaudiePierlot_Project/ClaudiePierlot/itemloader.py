@@ -57,6 +57,9 @@ class CategoryTreeItemLoader(ItemLoader):
     CategoryLevel1_in = MapCompose(processDesc, process_strip)
     CategoryLevel2_in = MapCompose(processDesc, process_strip)
     CategoryLevel3_in = MapCompose(processDesc, process_strip)
+    # CategoryLevel5_in = MapCompose(processDefault)
+    # CategoryLevel4_in = MapCompose(processDefault)
+    # CategoryLevel3_in = MapCompose(processDefault)
 
 
 class ProductInfoItemLoader(ItemLoader):
