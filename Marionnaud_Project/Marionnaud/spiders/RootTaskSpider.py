@@ -1,11 +1,12 @@
 import scrapy
+import datetime
 import uuid
 import random
-from Dior.items import CategoryTree, ProductInfo, TreeLevel
-from Dior.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
+from Marionnaud.items import CategoryTree, ProductInfo, TreeLevel
+from Marionnaud.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
-from Dior.settings import BOT_NAME
+from Marionnaud.settings import BOT_NAME
 import json
 from string import Template
 
@@ -135,34 +136,17 @@ from string import Template
 #         }
 #     ]
 
-class DiorSpider(RedisSpider):
+class DiorSpider(scrapy.Spider):
     name = 'RootTaskSpider'
-    main_url = 'https://www.dior.com/fr_fr'
-    redis_key = BOT_NAME + ':RootTaskSpider'
+    allowed_domains = ['https://www.marionnaud.fr']
+    main_url = 'https://www.marionnaud.fr'
 
-    # def start_requests(self):
-    #     urls = [
-    #         "https://www.dior.com/fr_fr"
-    #     ]
-    #     for url in urls:
-    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
-
-    def __init__(self, *args, **kwargs):
-            super(DiorSpider, self).__init__(*args, **kwargs)
-
-    def make_request_from_data(self, data):
-        receivedDictData = json.loads(str(data, encoding="utf-8"))
-        # print(receivedDictData)
-        # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.dior.com/fr_fr",dont_filter=True,
-                                         meta={'RootId': receivedDictData['Id']})
-        formRequest.headers = Headers(random.choice(self.headers_list))
-        return formRequest
-
-    def schedule_next_requests(self):
-        for request in self.next_requests():
-            request.headers = Headers(random.choice(self.headers_list))
-            self.crawler.engine.crawl(request, spider=self)
+    def start_requests(self):
+        urls = [
+            "https://www.marionnaud.fr/"
+        ]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
 
     def parse(self, response):
 
@@ -184,7 +168,7 @@ class DiorSpider(RedisSpider):
                     title_one_title,
                     ''
                     '',
-                    response.meta['RootId']
+                    # response.meta['RootId']
                 )
             results.append(catrgory_tree_one)
             # 二级菜单
@@ -196,7 +180,7 @@ class DiorSpider(RedisSpider):
                     title_one_title,
                     title_two_title,
                     '',
-                    response.meta['RootId']
+                    # response.meta['RootId']
                 )
                 results.append(catrgory_tree_two)
                 title_three_list = sec_level.css('.navigation-desktop-section-link')

@@ -61,3 +61,4 @@ class CategoryTreeItemLoader(ItemLoader):
 
 class ProductInfoItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    ProductName_in = MapCompose(processDesc, process_strip)

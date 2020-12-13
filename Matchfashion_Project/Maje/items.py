@@ -22,6 +22,7 @@ class ProductInfo(scrapy.Item):
     LastSuccessUtc = scrapy.Field()
     Status = scrapy.Field()
     ProductId = scrapy.Field()
+    ProjectName = scrapy.Field()
 
 
 class CategoryTree(scrapy.Item):

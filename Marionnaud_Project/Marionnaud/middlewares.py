@@ -4,24 +4,12 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-from scrapy.http import HtmlResponse
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from time import sleep
 
-chrome_options=Options()
-# chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-gpu')
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
 
-class ScrapytestSpiderMiddleware:
+class MarionnaudSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -68,11 +56,10 @@ class ScrapytestSpiderMiddleware:
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class ScrapytestDownloaderMiddleware:
+class MarionnaudDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
-
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -82,33 +69,6 @@ class ScrapytestDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        if (spider.name == 'diorProductScrapy'):
-
-            try:
-                self.driver = webdriver.Chrome(options=chrome_options)
-                # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
-                self.driver.get(request.url)
-                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
-                if self.isElementExist('p.product-titles-ref'):
-                    locator = (By.CSS_SELECTOR, 'div.product-actions__price span.price-line')
-                    WebDriverWait(self.driver, 20, 0.5).until(EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 20s
-                    return HtmlResponse(url=request.url,
-                                        body=self.driver.page_source,
-                                        request=request,
-                                        encoding='utf-8',
-                                        status=200)
-                else:
-                    return HtmlResponse(url=request.url,
-                                        body=self.driver.page_source,
-                                        request=request,
-                                        encoding='utf-8',
-                                        status=200)
-            except TimeoutException:
-                return HtmlResponse(url=request.url, status=500, request=request)
-            finally:
-                self.driver.close()
-        else:
-            return None
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -118,17 +78,8 @@ class ScrapytestDownloaderMiddleware:
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        # return None
+        return None
 
-    def isElementExist(self, element):
-        flag = True
-        browser = self.driver
-        try:
-            browser.find_element_by_css_selector(element)
-            return flag
-        except:
-            flag = False
-            return flag
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
 
@@ -150,4 +101,3 @@ class ScrapytestDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
-

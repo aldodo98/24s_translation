@@ -20,12 +20,20 @@ MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'Dior (+http://www.yourdomain.com)'
+# Enables scheduling storing requests queue in redis.
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
+REDIS_URL = 'redis://20.73.190.69:6379'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 ITEM_PIPELINES = {
-   'Dior.pipelines.ScrapytestPipeline': 300,
+   'Dior.pipelines.RedisPipeline': 300,
 }
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)

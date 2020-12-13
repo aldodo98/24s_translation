@@ -19,6 +19,7 @@ class ScrapytestPipeline:
         self.file.close()
 
     def process_item(self, item, spider):
+        print(item)
         line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
         self.file.writelines(line)
         return item
