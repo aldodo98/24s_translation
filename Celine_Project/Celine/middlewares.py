@@ -80,11 +80,7 @@ class CelineDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-<<<<<<< HEAD
         if spider.name == 'GetTreeProductListTaskSpider':
-=======
-        if spider.name == 'ProductTaskSpider':
->>>>>>> 8014cfe937ae052879e0203a2e01b54bbc9718f7
             if 'Type' in request.meta and request.meta['Type'] == 'menu':
                 return None
             try:
