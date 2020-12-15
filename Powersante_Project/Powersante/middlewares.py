@@ -87,7 +87,7 @@ class PowersanteDownloaderMiddleware:
         if spider.name == 'GetProductListTaskSpider':
             try:
                 print(request)
-                self.driver = webdriver.Chrome(options=chrome_options)
+                self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 locator = (By.CSS_SELECTOR, 'div#modal')
