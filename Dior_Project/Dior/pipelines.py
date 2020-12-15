@@ -9,6 +9,9 @@ from itemadapter import ItemAdapter
 import json
 
 from scrapy.utils.serialize import ScrapyJSONEncoder
+from scrapy_redis.pipelines import RedisPipeline
+
+from Dior.items import CategoryTree, ProductInfo, Product
 
 
 class ScrapytestPipeline:
@@ -35,3 +38,25 @@ class JsonPipeline:
         line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
         print(line)
         return item
+
+class RedisPipeline(RedisPipeline):
+
+    def _process_item(self, item, spider):
+        if item.__class__ == CategoryTree:
+            hName = 'RootTaskSpider:TaskResult'
+            hKey = item['Id']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item
+        elif item.__class__ == ProductInfo:
+            hName = 'GetTreeProductListTaskSpider:TaskResult'
+            hKey = item['Id']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item
+        elif item.__class__ == Product:
+            hName = 'ProductTaskSpider:TaskResult'
+            hKey = item['TaskId']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item

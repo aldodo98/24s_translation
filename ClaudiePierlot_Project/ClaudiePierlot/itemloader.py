@@ -19,6 +19,9 @@ def processDesc(values):
     result = replace_escape_chars(values, which_ones=('\t', '\r', '\n'), replace_by=u' ')
     return result
 
+def process_strip(values):
+    return values.strip()
+
 
 def processDataPrice(values):
     result = replace_escape_chars(values, which_ones='€', replace_by=u'.')
@@ -51,6 +54,9 @@ def processDefault(values):
 
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    CategoryLevel1_in = MapCompose(processDesc, process_strip)
+    CategoryLevel2_in = MapCompose(processDesc, process_strip)
+    CategoryLevel3_in = MapCompose(processDesc, process_strip)
     # CategoryLevel5_in = MapCompose(processDefault)
     # CategoryLevel4_in = MapCompose(processDefault)
     # CategoryLevel3_in = MapCompose(processDefault)
@@ -58,3 +64,4 @@ class CategoryTreeItemLoader(ItemLoader):
 
 class ProductInfoItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    ProductName_in = MapCompose(processDesc, process_strip)

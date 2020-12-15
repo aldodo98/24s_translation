@@ -3,35 +3,29 @@ import random
 
 from scrapy import Selector
 
-from Dior.items import Product
-from Dior.itemloader import ProductItemLoader
+
 from scrapy.http.headers import Headers
-from scrapy_redis.spiders import RedisSpider
 import json
 from Dior.settings import BOT_NAME
 from datetime import datetime
-# import datetime
-from datetime import datetime
 from Dior.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
 from Dior.itemloader import ProductItemLoader, VariableClassItemLoader
-from diorProduct.diorProduct.itemloader import MarionnaudItemLoader
 
 
 class ProductTaskSpider(scrapy.Spider):
     # class ProductTaskSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
-    allowed_domains = ['https://www.dior.cn']
-    main_url = 'https://www.dior.cn'
-
-    start_urls = [
-        'https://www.dior.cn/zh_cn/products/couture-051R09A1166_X9000-%E7%9F%AD%E6%AC%BE%E8%BF%9E%E8%A1%A3%E8%A3%99-%E9%BB%91%E8%89%B2%E7%BE%8A%E6%AF%9B%E5%92%8C%E6%A1%91%E8%9A%95%E4%B8%9D%E6%B7%B7%E7%BA%BA',
-    ]
+    main_url = 'https://www.dior.com/fr_fr'
+    #
+    # start_urls = [
+    #     'https://www.dior.cn/zh_cn/products/couture-051R09A1166_X9000-%E7%9F%AD%E6%AC%BE%E8%BF%9E%E8%A1%A3%E8%A3%99-%E9%BB%91%E8%89%B2%E7%BE%8A%E6%AF%9B%E5%92%8C%E6%A1%91%E8%9A%95%E4%B8%9D%E6%B7%B7%E7%BA%BA',
+    # ]
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(ProductTaskSpider, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProductTaskSpider, self).__init__(*args, **kwargs)
 
     def make_request_from_data(self, data):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
@@ -57,7 +51,7 @@ class ProductTaskSpider(scrapy.Spider):
                 text = filterRes.css('div.top-content-desktop-right').get()
                 selector = Selector(text=text)
                 productItemloader = ProductItemLoader(item=product, response=text, selector=selector)
-                productItemloader.add_value('TaskId', 'test')
+                productItemloader.add_value('TaskId', response.meta['TaskId'])
                 productItemloader.add_css('Name', 'span.multiline-text.product-titles-title::text')
                 productItemloader.add_css('ShortDescription', 'span.multiline-text.product-titles-subtitle::text')
 

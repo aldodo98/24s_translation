@@ -1,11 +1,14 @@
+from time import sleep
+
 import scrapy
 import datetime
 import uuid
 import random
-from Dior.items import CategoryTree, ProductInfo, TreeLevel
-from Dior.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
+from ClaudiePierlot.items import CategoryTree, ProductInfo, TreeLevel
+from ClaudiePierlot.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from scrapy.http.headers import Headers
-from Dior.settings import BOT_NAME
+from scrapy_redis.spiders import RedisSpider
+from ClaudiePierlot.settings import BOT_NAME
 
 import json
 
@@ -115,32 +118,15 @@ import json
 class GetProductListTaskSpider(scrapy.Spider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    main_url = "https://www.dior.com/fr_fr"
+    allowed_domains = ['https://fr.claudiepierlot.com']
+    main_url = "https://fr.claudiepierlot.com"
 
-    # def start_requests(self):
-    #     urls = [
-    #         "https://www.dior.cn/zh_cn/gifts/women%E2%80%99s-fashion-and-accessories-gifts"
-    #     ]
-    #     for url in urls:
-    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
-    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    def __init__(self, *args, **kwargs):
-        # 修改这里的类名为当前类名
-        super(GetProductListTaskSpider, self).__init__(*args, **kwargs)
-
-    def make_request_from_data(self, data):
-        receivedDictData = json.loads(str(data, encoding="utf-8"))
-        # print(receivedDictData)
-        # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
-                                         meta={'CategoryTreeId': receivedDictData['Id']})
-        formRequest.headers = Headers(random.choice(self.headers_list))
-        return formRequest
-
-    def schedule_next_requests(self):
-        for request in self.next_requests():
-            request.headers = Headers(random.choice(self.headers_list))
-            self.crawler.engine.crawl(request, spider=self)
+    def start_requests(self):
+        urls = [
+            "https://fr.claudiepierlot.com/fr/categories/robes-2/"
+        ]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
 
     def parse(self, response):
         try:
@@ -150,29 +136,33 @@ class GetProductListTaskSpider(scrapy.Spider):
         except Exception as err:
             print(err)
 
+
     def getProducts(self, response):
-        category_id = response.meta['CategoryTreeId']
-        mutiple_lists = response.css('ul.grid-view-content')
-        for lists in mutiple_lists:
-            items = lists.css('li.grid-view-element')
-            for item in items:
-                product_info = ProductInfo()
-                product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
-                product_itemloader.add_value('CategoryTreeId', category_id)
-                product_itemloader.add_value('Id', str(uuid.uuid4()))
-                product_itemloader.add_value('ProjectName', BOT_NAME)
-                url = item.css('a.product-link::attr(href)').get()
-                if url is not None and self.main_url not in url:
+        # category_id = response.meta['CategoryTreeId']
+        lists = response.css('#search-result-items li')
+        for item in lists:
+            product_info = ProductInfo()
+            product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
+            # product_itemloader.add_value('CategoryTreeId', category_id)
+            product_itemloader.add_value('Id', str(uuid.uuid4()))
+            product_itemloader.add_value('ProjectName', BOT_NAME)
+            product_itemloader.add_value('ProductName', item.css('.titleProduct a.name-link::text').get())
+            product_itemloader.add_value('Price', item.css('.product-pricing .product-sales-price::text').get())
+            url = item.css('a.thumb-link::attr("href")').get()
+            if url is None:
+                yield None
+            else:
+                if self.main_url not in url:
                     product_itemloader.add_value('ProductUrl', self.main_url + url)
                 else:
                     product_itemloader.add_value('ProductUrl', url)
-                product_itemloader.add_value('ProductName',
-                                             (item.css('.product-title>span::text').get() or '') +
-                                             ''.join((item.css('.product-subtitle::text').get() or ''))
-                                             )
-                product_itemloader.add_value('Price', item.css('.price-line::text').get())
                 yield product_itemloader.load_item()
-            yield None
+        if len(response.css('.c-pagination__more')) > 0:
+            nextUrl = response.css('.c-pagination__more::attr("href")').get()
+            sleep(5)
+            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list))
+        else:
+            return
 
     headers_list = [
         # Chrome

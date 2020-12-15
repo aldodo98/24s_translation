@@ -1,11 +1,12 @@
 import scrapy
+import datetime
 import uuid
 import random
-from Dior.items import CategoryTree, ProductInfo, TreeLevel
-from Dior.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
+from ClaudiePierlot.items import CategoryTree, ProductInfo, TreeLevel
+from ClaudiePierlot.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
-from Dior.settings import BOT_NAME
+from ClaudiePierlot.settings import BOT_NAME
 import json
 from string import Template
 
@@ -135,34 +136,17 @@ from string import Template
 #         }
 #     ]
 
-class DiorSpider(RedisSpider):
+class DiorSpider(scrapy.Spider):
     name = 'RootTaskSpider'
-    main_url = 'https://www.dior.com/fr_fr'
-    redis_key = BOT_NAME + ':RootTaskSpider'
+    allowed_domains = ['https://fr.claudiepierlot.com']
+    main_url = 'https://fr.claudiepierlot.com'
 
-    # def start_requests(self):
-    #     urls = [
-    #         "https://www.dior.com/fr_fr"
-    #     ]
-    #     for url in urls:
-    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
-
-    def __init__(self, *args, **kwargs):
-            super(DiorSpider, self).__init__(*args, **kwargs)
-
-    def make_request_from_data(self, data):
-        receivedDictData = json.loads(str(data, encoding="utf-8"))
-        # print(receivedDictData)
-        # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.dior.com/fr_fr",dont_filter=True,
-                                         meta={'RootId': receivedDictData['Id']})
-        formRequest.headers = Headers(random.choice(self.headers_list))
-        return formRequest
-
-    def schedule_next_requests(self):
-        for request in self.next_requests():
-            request.headers = Headers(random.choice(self.headers_list))
-            self.crawler.engine.crawl(request, spider=self)
+    def start_requests(self):
+        urls = [
+            "https://fr.claudiepierlot.com"
+        ]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
 
     def parse(self, response):
 
@@ -175,31 +159,31 @@ class DiorSpider(RedisSpider):
 
     def generate_levels(self, response):
         results = list()
-        for level in response.css('ul.navigation-desktop-menu>li.navigation-tab'):
+        for level in response.css('ul.listMenu>li:not(.gift-guide):not(.univers)'):
             # 一级菜单
-            title_one = level.css('div.navigation-tab-head')
+            title_one = level.css('li.listItem>a')
             title_one_title = title_one.css('span::text').get()
             catrgory_tree_one = self.get_category_tree(
                     title_one.css('a::attr(href)').get(),
                     title_one_title,
                     ''
                     '',
-                    response.meta['RootId']
+                    # response.meta['RootId']
                 )
             results.append(catrgory_tree_one)
             # 二级菜单
-            title_two_list = level.css('.navigation-tab-content>ul>li.navigation-tab-content-column')
+            title_two_list = level.css('.subMain.large>ul>li.ColumnList')
             for sec_level in title_two_list:
-                title_two_title = sec_level.css('div[role="heading"] span::text').get()
-                catrgory_tree_two = self.get_category_tree(
-                    sec_level.css('div[role="heading"] a::attr(href)').get(),
-                    title_one_title,
-                    title_two_title,
-                    '',
-                    response.meta['RootId']
-                )
-                results.append(catrgory_tree_two)
-                title_three_list = sec_level.css('.navigation-desktop-section-link')
+                title_two_title = sec_level.css('li.ColumnList>span::text').get()
+                # catrgory_tree_two = self.get_category_tree(
+                #     sec_level.css('div[role="heading"] a::attr(href)').get(),
+                #     title_one_title,
+                #     title_two_title,
+                #     '',
+                #     # response.meta['RootId']
+                # )
+                # results.append(catrgory_tree_two)
+                title_three_list = sec_level.css('li.ColumnList>ul>li')
                 for third_level in title_three_list:
                     title_three_title = third_level.css('span::text').get()
                     catrgory_tree_three = self.get_category_tree(
