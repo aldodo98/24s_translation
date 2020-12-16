@@ -137,7 +137,7 @@ from string import Template
 
 class DiorSpider(RedisSpider):
     name = 'RootTaskSpider'
-    main_url = 'https://www.dior.com/fr_fr'
+    main_url = 'https://www.dior.com'
     redis_key = BOT_NAME + ':RootTaskSpider'
 
     # def start_requests(self):
