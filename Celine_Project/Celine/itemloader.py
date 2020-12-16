@@ -34,6 +34,7 @@ def processDesc(values):
 def processDataPrice(values):
     result = replace_escape_chars(values, which_ones='€', replace_by=u'')
     result = replace_escape_chars(result, which_ones='EUR', replace_by=u'')
+    result = replace_escape_chars(result, which_ones=' ', replace_by=u'')
     return result
 
 
@@ -43,11 +44,13 @@ def convertMultipuleBlankToOne(values):
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    Price_in = MapCompose(remove_tags, processDesc, processDataPrice)
+    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
 
 
 class VariableClassItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     DataCode_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
-    NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
-    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
+    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
     Name_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
