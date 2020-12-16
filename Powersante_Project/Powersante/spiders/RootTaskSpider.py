@@ -66,15 +66,15 @@ class RoottaskspiderSpider(RedisSpider):
 
             for ele in cate_list_1:
                 cate_1 = ele.css('a::text').get()  # 一级目录
-                # url_1 = ele.css('a::attr(href)').get()  # 一级目录商品url
+                url_1 = ele.css('a::attr(href)').get()  # 一级目录商品url
                 ele_list_2 = ele.css('.section>.section_inner>ul>li:not(.back):not(.title):not(.all)')  # 二级目录元素列表
-                # yield self.getCategoryItem(
-                #     cate_1,
-                #     None,
-                #     None,
-                #     url_1,
-                #     response.meta['RootId']
-                # )
+                yield self.getCategoryItem(
+                    cate_1,
+                    None,
+                    None,
+                    url_1,
+                    response.meta['RootId']
+                )
 
                 for _ele in ele_list_2:
                     cate_2 = _ele.css('a::text').get()  # 二级目录
