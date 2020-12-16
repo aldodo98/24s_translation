@@ -10,9 +10,10 @@ from Dior.settings import BOT_NAME
 from datetime import datetime
 from Dior.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
 from Dior.itemloader import ProductItemLoader, VariableClassItemLoader
+from scrapy_redis.spiders import RedisSpider
 
 
-class ProductTaskSpider(scrapy.Spider):
+class ProductTaskSpider(RedisSpider):
     # class ProductTaskSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
