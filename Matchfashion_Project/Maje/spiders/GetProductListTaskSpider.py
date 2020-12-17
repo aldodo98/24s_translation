@@ -121,12 +121,30 @@ class GetProductListTaskSpider(scrapy.Spider):
     allowed_domains = ['https://fr.maje.com']
     main_url = 'https://fr.maje.com'
 
-    def start_requests(self):
-        urls = [
-            "https://fr.maje.com/fr/pret-a-porter/collection/toute-la-collection/"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(GetProductListTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
+                                         meta={'CategoryTreeId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
+    # def start_requests(self):
+    #     urls = [
+    #         "https://fr.maje.com/fr/pret-a-porter/collection/toute-la-collection/"
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
 
     def parse(self, response):
         try:
@@ -138,12 +156,12 @@ class GetProductListTaskSpider(scrapy.Spider):
 
 
     def getProducts(self, response):
-        # category_id = response.meta['CategoryTreeId']
+        category_id = response.meta['CategoryTreeId']
         lists = response.css('#search-result-items li')
         for item in lists:
             product_info = ProductInfo()
             product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
-            # product_itemloader.add_value('CategoryTreeId', category_id)
+            product_itemloader.add_value('CategoryTreeId', category_id)
             product_itemloader.add_value('Id', str(uuid.uuid4()))
             product_itemloader.add_value('ProjectName', BOT_NAME)
             url = item.css('.titleProduct>a::attr("href")').get()

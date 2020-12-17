@@ -13,6 +13,7 @@ from Dior.settings import BOT_NAME
 from datetime import datetime
 from Dior.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
 from Dior.itemloader import ProductItemLoader, VariableClassItemLoader
+from scrapy_redis.spiders import RedisSpider
 
 
 class ProductTaskSpider(RedisSpider):

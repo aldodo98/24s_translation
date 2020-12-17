@@ -4,7 +4,7 @@ import scrapy
 import json
 import random
 
-from Maje.itemloader import VariableClassItemLoader, MarionnaudItemLoader
+from Maje.itemloader import VariableClassItemLoader, ProductItemLoader, ProductInfoItemLoader
 from Maje.items import Product, AttributeBasicInfoClass, ProductAttributeClass, MappingClass, VariableClass
 from scrapy.selector import Selector
 from scrapy.loader import ItemLoader
@@ -16,7 +16,7 @@ class MajeProductSpider(scrapy.Spider):
 
     def start_requests(self):
         urls =[
-            'https://us.maje.com/en/categories/t-shirts/120talent/MFPTS00344.html?dwvar_MFPTS00344_color=0101'
+            'https://fr.maje.com/fr/accessoires/selection/bijoux/120npanda/MFABI00682.html?dwvar_MFABI00682_color=R002'
         ]
         for url in urls:
             # Pick a random browser headers
@@ -31,21 +31,19 @@ class MajeProductSpider(scrapy.Spider):
             self.oriResponse = response
             filterRes = response.css('.product-detail')
             # 获取基本信息
-            text = filterRes.get()
-            selector = Selector(text=text)
-            productItemloader = MarionnaudItemLoader(item=product, response=text, selector=selector)
+            productItemloader = ProductItemLoader(item=product, response=response)
             productItemloader.add_value('TaskId', 'test')
-            productItemloader.add_css('Name', 'span.productSubname::text')
+            productItemloader.add_value('Name', filterRes.css('span.productSubname::text').get())
             productItemloader.add_value('ShortDescription', '')
             self.Price = filterRes.css('div.product-price span.price-sales::text').get()
             self.OldPrice = filterRes.css('div.product-price span.price-standard::text').get()
             productItemloader.add_value('Price', self.Price)
             productItemloader.add_value('OldPrice', self.OldPrice)
             productItemloader.add_value('LastChangeTime', datetime.utcnow())
-            productItemloader.add_css('FullDescription', 'p[itemprop=description]::text')
+            productItemloader.add_value('FullDescription', filterRes.css('p[itemprop=description]::text').get())
             item = productItemloader.load_item()
             # 获取属性
-            productAttributes = self.getProductAttributes(filterRes)
+            productAttributes = self.getProductAttributes(response)
             item['ProductAttributes'] = productAttributes
             yield item
         else:

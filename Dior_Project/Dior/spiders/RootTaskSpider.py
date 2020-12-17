@@ -208,7 +208,8 @@ class DiorSpider(RedisSpider):
                         third_level.css('a::attr(href)').get(),
                         title_one_title,
                         title_two_title,
-                        title_three_title
+                        title_three_title,
+                        response.meta['RootId']
                     )
                     results.append(catrgory_tree_three)
 

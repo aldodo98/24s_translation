@@ -9,6 +9,7 @@ from Dior.items import CategoryTree, ProductInfo, TreeLevel
 from Dior.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from scrapy.http.headers import Headers
 from Dior.settings import BOT_NAME
+from scrapy_redis.spiders import RedisSpider
 
 import json
 

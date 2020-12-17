@@ -19,8 +19,19 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
+REDIS_URL = 'redis://20.73.190.69:6379'
+# Obey robots.txt rules
+ROBOTSTXT_OBEY = True
+
 ITEM_PIPELINES = {
-   'Maje.pipelines.JsonPipeline': 300,
+   'Maje.pipelines.RedisPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
