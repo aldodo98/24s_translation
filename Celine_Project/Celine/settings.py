@@ -27,7 +27,7 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 
 SCHEDULER_PERSIST = True
 FEED_EXPORT_ENCODING = 'utf-8'
-REDIS_URL = 'redis://20.73.190.69:6379'
+REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
 ITEM_PIPELINES = {
    'Celine.pipelines.RedisPipeline': 300,
 }

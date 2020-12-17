@@ -1,6 +1,7 @@
 // eslint-disable-next-line
 import { UserLayout, BasicLayout, BlankLayout } from '@/layouts'
 import { bxAnaalyse } from '@/core/icons'
+import configs from '@/config/env'
 
 const RouteView = {
   name: 'RouteView',
@@ -50,7 +51,7 @@ export const asyncRouterMap = [
       },
        // 外部链接
       {
-        path: 'http://20.73.190.69:5000/',
+        path: configs.production.Scrapyd_Web_Url,
         name: 'Scrapyd Server Monitor',
         meta: { title: 'Scrapyd Server Monitor', target: '_blank' }
       }
