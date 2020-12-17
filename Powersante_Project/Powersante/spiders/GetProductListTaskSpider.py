@@ -48,7 +48,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
         if response.status != 200:
             yield None
 
-        category_id = response.meta['CategoryId']
+        category_id = response.meta['CategoryTreeId']
 
         lists = response.css('ul#instant-search-results-container>li')
         print(len(lists))
