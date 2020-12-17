@@ -116,7 +116,7 @@ import json
 class GetProductListTaskSpider(RedisSpider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    main_url = "https://www.dior.com/fr_fr"
+    main_url = "https://www.dior.com"
     allowed_domains = ['www.dior.com']
 
     # def start_requests(self):

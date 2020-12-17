@@ -139,6 +139,7 @@ class DiorSpider(RedisSpider):
     name = 'RootTaskSpider'
     main_url = 'https://www.dior.com'
     redis_key = BOT_NAME + ':RootTaskSpider'
+    allowed_domains = ['www.dior.com']
 
     # def start_requests(self):
     #     urls = [

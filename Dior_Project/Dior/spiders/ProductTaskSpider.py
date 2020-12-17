@@ -17,7 +17,7 @@ class ProductTaskSpider(RedisSpider):
     # class ProductTaskSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
-    main_url = 'https://www.dior.com/fr_fr'
+    main_url = 'https://www.dior.com'
     #
     # start_urls = [
     #     'https://www.dior.cn/zh_cn/products/couture-051R09A1166_X9000-%E7%9F%AD%E6%AC%BE%E8%BF%9E%E8%A1%A3%E8%A3%99-%E9%BB%91%E8%89%B2%E7%BE%8A%E6%AF%9B%E5%92%8C%E6%A1%91%E8%9A%95%E4%B8%9D%E6%B7%B7%E7%BA%BA',
