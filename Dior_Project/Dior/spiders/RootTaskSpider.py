@@ -137,9 +137,9 @@ from string import Template
 
 class DiorSpider(RedisSpider):
     name = 'RootTaskSpider'
-    main_url = 'https://www.dior.com/fr_fr'
+    main_url = 'https://www.dior.com'
     redis_key = BOT_NAME + ':RootTaskSpider'
-
+    allowed_domains = ['https://www.dior.com']
     # def start_requests(self):
     #     urls = [
     #         "https://www.dior.com/fr_fr"
@@ -190,7 +190,9 @@ class DiorSpider(RedisSpider):
             # 二级菜单
             title_two_list = level.css('.navigation-tab-content>ul>li.navigation-tab-content-column')
             for sec_level in title_two_list:
-                title_two_title = sec_level.css('div[role="heading"] span::text').get()
+                title_two_title = sec_level.css('div[role="heading"] .multiline-text::text').get()
+                if title_three_title is None:
+                    break
                 catrgory_tree_two = self.get_category_tree(
                     sec_level.css('div[role="heading"] a::attr(href)').get(),
                     title_one_title,

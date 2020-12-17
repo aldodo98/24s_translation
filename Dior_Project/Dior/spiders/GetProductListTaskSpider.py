@@ -2,6 +2,9 @@ import scrapy
 import datetime
 import uuid
 import random
+
+from scrapy_redis.spiders import RedisSpider
+
 from Dior.items import CategoryTree, ProductInfo, TreeLevel
 from Dior.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from scrapy.http.headers import Headers
@@ -112,11 +115,11 @@ import json
 #         }
 #     ]
 
-class GetProductListTaskSpider(scrapy.Spider):
+class GetProductListTaskSpider(RedisSpider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    main_url = "https://www.dior.com/fr_fr"
-
+    main_url = "https://www.dior.com"
+    allowed_domains = ['https://www.dior.com']
     # def start_requests(self):
     #     urls = [
     #         "https://www.dior.cn/zh_cn/gifts/women%E2%80%99s-fashion-and-accessories-gifts"
