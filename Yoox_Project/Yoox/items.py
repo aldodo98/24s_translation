@@ -26,7 +26,6 @@ class ProductInfo(scrapy.Item):
     ProductId = scrapy.Field()
 
 
-
 class CategoryTree(scrapy.Item):
     Id = scrapy.Field()
     RootId = scrapy.Field()

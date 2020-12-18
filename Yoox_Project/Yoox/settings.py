@@ -1,4 +1,4 @@
-# Scrapy settings for Celine project
+# Scrapy settings for Yoox project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'Maje'
+BOT_NAME = 'Yoox'
 
-SPIDER_MODULES = ['Maje.spiders']
-NEWSPIDER_MODULE = 'Maje.spiders'
+SPIDER_MODULES = ['Yoox.spiders']
+NEWSPIDER_MODULE = 'Yoox.spiders'
 
 DOWNLOAD_DELAY = 3
 
@@ -19,6 +19,7 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
+# Enables scheduling storing requests queue in redis.
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # Ensure all spiders share same duplicates filter through redis.
@@ -27,15 +28,18 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 SCHEDULER_PERSIST = True
 FEED_EXPORT_ENCODING = 'utf-8'
 REDIS_URL = 'redis://20.73.190.69:6379'
-# Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+
+DOWNLOADER_MIDDLEWARES = {
+   'Yoox.middlewares.YooxDownloaderMiddleware': 543,
+}
 
 ITEM_PIPELINES = {
-   'Maje.pipelines.RedisPipeline': 300,
+   # 'Yoox.pipelines.YooxPipeline': 300,
+   'Yoox.pipelines.RedisPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'Celine (+http://www.yourdomain.com)'
+#USER_AGENT = 'Yoox (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -66,14 +70,14 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'Celine.middlewares.CelineSpiderMiddleware': 543,
+#    'Yoox.middlewares.YooxSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'Maje.middlewares.MajeDownloaderMiddleware': 543,
-# }
+#DOWNLOADER_MIDDLEWARES = {
+#    'Yoox.middlewares.YooxDownloaderMiddleware': 543,
+#}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -83,7 +87,9 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
+#ITEM_PIPELINES = {
+#    'Yoox.pipelines.YooxPipeline': 300,
+#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
