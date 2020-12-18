@@ -6,30 +6,32 @@
 import scrapy
 
 
+class TreeLevel(scrapy.Item):
+    Id = scrapy.Field()
+    Level = scrapy.Field()
+    Name = scrapy.Field()
+    Names = scrapy.Field()
+    DomId = scrapy.Field()
+    DomParentId = scrapy.Field()
+    Urls = scrapy.Field()
+
+
 class ProductInfo(scrapy.Item):
     ProductUrl = scrapy.Field()
     Id = scrapy.Field()
     CategoryTreeId = scrapy.Field()
+    ProjectName = scrapy.Field()
     ProductName = scrapy.Field()
     Price = scrapy.Field()
-
-    SpiderScriptPath = scrapy.Field()
-    Seconds = scrapy.Field()
-    Enabled = scrapy.Field()
-
-    LastStartUtc = scrapy.Field()
-    LastEndUtc = scrapy.Field()
-    LastSuccessUtc = scrapy.Field()
-    Status = scrapy.Field()
     ProductId = scrapy.Field()
-    ProjectName = scrapy.Field()
+
 
 
 class CategoryTree(scrapy.Item):
     Id = scrapy.Field()
-    ManufacturerId = scrapy.Field()
-    CategoryId = scrapy.Field()
+    RootId = scrapy.Field()
 
+    ProjectName = scrapy.Field()
     CategoryLevel1 = scrapy.Field()
     CategoryLevel2 = scrapy.Field()
     CategoryLevel3 = scrapy.Field()
@@ -37,10 +39,7 @@ class CategoryTree(scrapy.Item):
     CategoryLevel5 = scrapy.Field()
 
     Level_Url = scrapy.Field()
-    CreateDateTime = scrapy.Field()
-    UpdateDateTime = scrapy.Field()
-    RootId = scrapy.Field()
-    ProjectName = scrapy.Field()
+
 
 class Product(scrapy.Item):
     TaskId = scrapy.Field()
@@ -52,20 +51,28 @@ class Product(scrapy.Item):
     ImageThumbnailUrl = scrapy.Field()
     ImageUrls = scrapy.Field()
     ProductAttributes = scrapy.Field()
+
     LastChangeTime = scrapy.Field()
     HashCode = scrapy.Field()
     Success = scrapy.Field()
     Msg = scrapy.Field()
-    LastChangeTime = scrapy.Field()
 
-class AttributeBasicInfoClass(scrapy.Item):
-    Name = scrapy.Field()
-    Description = scrapy.Field()
+    def getHashcode(self):
+        if not self._values.get('Name'):
+            self._values['Name'] = "noValue"
+        return str(self._values['Price']) + str(self._values['OldPrice']) + str(self._values['Name'])
+
 
 class ProductAttributeClass(scrapy.Item):
     AttributeBasicInfo = scrapy.Field()
     Mapping = scrapy.Field()
     Variables = scrapy.Field()
+
+
+class AttributeBasicInfoClass(scrapy.Item):
+    Name = scrapy.Field()
+    Description = scrapy.Field()
+
 
 class MappingClass(scrapy.Item):
     TextPrompt = scrapy.Field()
@@ -77,6 +84,17 @@ class MappingClass(scrapy.Item):
     # ConditionAllowed = scrapy.Field()
     # ConditionString = scrapy.Field()
     # ConditionModel = scrapy.Field()
+
+
+class VariantDisplays(scrapy.Item):
+    dataCode = scrapy.Field()
+    dataNewPrice = scrapy.Field()
+    dataOldPrice = scrapy.Field()
+
+    dataCurrency = scrapy.Field()
+    dataNameText = scrapy.Field()
+    imagesData = scrapy.Field()
+
 
 class VariableClass(scrapy.Item):
     DataCode = scrapy.Field()
@@ -93,12 +111,11 @@ class VariableClass(scrapy.Item):
     DisplayImageSquaresPicture = scrapy.Field()
     PictureUrlInStorage = scrapy.Field()
 
-class TreeLevel(scrapy.Item):
-    Id = scrapy.Field()
-    Level = scrapy.Field()
-    Name = scrapy.Field()
-    Names = scrapy.Field()
-    DomId = scrapy.Field()
-    DomParentId = scrapy.Field()
-    Urls = scrapy.Field()
 
+class ProductAdditionalProcessData(scrapy.Item):
+    Product = scrapy.Field()
+    ProductAttributeName = scrapy.Field()
+    DataCode = scrapy.Field()
+    PictureUrlInStorage = scrapy.Field()
+    Success = scrapy.Field()
+    Msg = scrapy.Field()

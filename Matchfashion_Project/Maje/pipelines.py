@@ -10,6 +10,7 @@ import json
 from itemadapter import ItemAdapter
 import pymysql
 from scrapy.utils.serialize import ScrapyJSONEncoder
+from scrapy_redis.pipelines import RedisPipeline
 
 from Maje.items import CategoryTree
 
@@ -92,3 +93,25 @@ class JsonPipeline:
         line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
         self.file.writelines(line)
         return item
+
+class RedisPipeline(RedisPipeline):
+
+    def _process_item(self, item, spider):
+        if item.__class__ == CategoryTree:
+            hName = 'RootTaskSpider:TaskResult'
+            hKey = item['Id']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item
+        elif item.__class__ == ProductInfo:
+            hName = 'GetTreeProductListTaskSpider:TaskResult'
+            hKey = item['Id']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item
+        elif item.__class__ == Product:
+            hName = 'ProductTaskSpider:TaskResult'
+            hKey = item['TaskId']
+            hValue = self.serialize(item)
+            self.server.hset(name=hName, key=hKey, value=hValue)
+            return item

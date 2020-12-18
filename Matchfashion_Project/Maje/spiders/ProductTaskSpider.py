@@ -1,28 +1,57 @@
-from datetime import datetime
-
 import scrapy
-import json
 import random
+from Maje.items import Product
+from Maje.itemloader import ProductItemLoader
+from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
+import json
+from Maje.settings import BOT_NAME
+from datetime import datetime
+# import datetime
+from datetime import datetime
+from Maje.items import Product, AttributeBasicInfoClass, MappingClass, ProductAttributeClass, VariableClass
+from Maje.itemloader import ProductItemLoader, VariableClassItemLoader
 
-from Maje.itemloader import VariableClassItemLoader, ProductItemLoader, ProductInfoItemLoader
-from Maje.items import Product, AttributeBasicInfoClass, ProductAttributeClass, MappingClass, VariableClass
-from scrapy.selector import Selector
-from scrapy.loader import ItemLoader
 
+class ProductTaskSpider(RedisSpider):
+    # class ProductTaskSpider(scrapy.Spider):
+    name = 'ProductTaskSpider'
+    redis_key = BOT_NAME + ':ProductTaskSpider'
+    allowed_domains = ['https://fr.maje.com']
+    main_url = 'https://fr.maje.com'
 
-class MajeProductSpider(scrapy.Spider):
-    name = 'majeProductScrapy'
-    # start_urls = ['https://www.dior.com/en_us/products/couture-051R07A1238_X9330-short-dress-black-and-white-check-wool'
+    # start_urls = [
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/coffret-1-parfum-de-200ml-en-toile-triomphe-et-veau-naturel-4M0222AB5.04LU.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/parfums/eau-de-californie-eau-de-parfum-200ml-6PC1N0605.37TT.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/sacs/luggage/sac-luggage-nano-modele-veau-foulonne-189243DRU.33AC.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-femme/petite-maroquinerie/autres/bijou-de-sac-losange-en-veau-naturel-10F153CG5.04LU.html',
+    #     'https://www.celine.com/fr-fr/celine-boutique-homme/chaussures/sneakers/sneaker-montante--inchz-inch-trainer-ct-01-veau-342813338C.38AB.html'
+    # ]
 
-    def start_requests(self):
-        urls =[
-            'https://fr.maje.com/fr/accessoires/selection/bijoux/120npanda/MFABI00682.html?dwvar_MFABI00682_color=R002'
-        ]
-        for url in urls:
-            # Pick a random browser headers
-            headers = random.choice(self.headers_list)
-            print(headers)
-            yield scrapy.Request(url=url, callback=self.parse, headers=headers)
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    # def __init__(self, *args, **kwargs):
+    #     # 修改这里的类名为当前类名
+    #     super(ProductTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['ProductUrl'], dont_filter=True,
+                                         meta={'TaskId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
+
+    def parse(self, response):
+        try:
+            return self.parse_res(response=response)
+        except Exception as err:
+            print(err)
 
     def parse(self, response):
         product = Product()
@@ -32,14 +61,14 @@ class MajeProductSpider(scrapy.Spider):
             filterRes = response.css('.product-detail')
             # 获取基本信息
             productItemloader = ProductItemLoader(item=product, response=response)
-            productItemloader.add_value('TaskId', 'test')
+            productItemloader.add_value('TaskId', response.meta['TaskId'])
             productItemloader.add_value('Name', filterRes.css('span.productSubname::text').get())
             productItemloader.add_value('ShortDescription', '')
             self.Price = filterRes.css('div.product-price span.price-sales::text').get()
             self.OldPrice = filterRes.css('div.product-price span.price-standard::text').get()
             productItemloader.add_value('Price', self.Price)
             productItemloader.add_value('OldPrice', self.OldPrice)
-            productItemloader.add_value('LastChangeTime', datetime.utcnow())
+            productItemloader.add_value('LastChangeTime', datetime.utcnow().isoformat())
             productItemloader.add_value('FullDescription', filterRes.css('p[itemprop=description]::text').get())
             item = productItemloader.load_item()
             # 获取属性
@@ -192,3 +221,4 @@ class MajeProductSpider(scrapy.Spider):
             result.append(colorAttri)
 
         return result
+
