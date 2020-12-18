@@ -118,7 +118,7 @@ import json
 class GetProductListTaskSpider(scrapy.Spider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    allowed_domains = ['https://fr.claudiepierlot.com']
+    allowed_domains = ['fr.claudiepierlot.com']
     main_url = "https://fr.claudiepierlot.com"
 
     def start_requests(self):

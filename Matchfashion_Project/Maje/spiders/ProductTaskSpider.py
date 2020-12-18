@@ -17,7 +17,7 @@ class ProductTaskSpider(RedisSpider):
     # class ProductTaskSpider(scrapy.Spider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
-    allowed_domains = ['https://fr.maje.com']
+    allowed_domains = ['fr.maje.com']
     main_url = 'https://fr.maje.com'
 
     # start_urls = [

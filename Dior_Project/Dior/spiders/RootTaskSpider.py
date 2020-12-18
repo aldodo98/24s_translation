@@ -192,8 +192,6 @@ class DiorSpider(RedisSpider):
             title_two_list = level.css('.navigation-tab-content>ul>li.navigation-tab-content-column')
             for sec_level in title_two_list:
                 title_two_title = sec_level.css('div[role="heading"] .multiline-text::text').get()
-                if title_three_title is None:
-                    break
                 catrgory_tree_two = self.get_category_tree(
                     sec_level.css('div[role="heading"] a::attr(href)').get(),
                     title_one_title,
@@ -205,6 +203,8 @@ class DiorSpider(RedisSpider):
                 title_three_list = sec_level.css('.navigation-desktop-section-link')
                 for third_level in title_three_list:
                     title_three_title = third_level.css('span::text').get()
+                    if title_three_title is None:
+                        continue
                     catrgory_tree_three = self.get_category_tree(
                         third_level.css('a::attr(href)').get(),
                         title_one_title,

@@ -155,6 +155,7 @@ class GetProductListTaskSpider(RedisSpider):
     def getProducts(self, response):
         category_id = response.meta['CategoryTreeId']
         mutiple_lists = response.css('ul.grid-view-content')
+        count = 0
         for lists in mutiple_lists:
             items = lists.css('li.grid-view-element')
             for item in items:
@@ -167,7 +168,7 @@ class GetProductListTaskSpider(RedisSpider):
                 if url is not None and self.main_url not in url:
                     product_itemloader.add_value('ProductUrl', self.main_url + url)
                 elif url is None:
-                    break
+                    continue
                 else:
                     product_itemloader.add_value('ProductUrl', url)
                 product_itemloader.add_value('ProductName',
@@ -176,7 +177,6 @@ class GetProductListTaskSpider(RedisSpider):
                                              )
                 product_itemloader.add_value('Price', item.css('.price-line::text').get())
                 yield product_itemloader.load_item()
-            yield None
 
     headers_list = [
         # Chrome

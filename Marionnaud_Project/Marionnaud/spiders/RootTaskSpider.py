@@ -138,7 +138,7 @@ from string import Template
 
 class DiorSpider(scrapy.Spider):
     name = 'RootTaskSpider'
-    allowed_domains = ['https://www.marionnaud.fr']
+    allowed_domains = ['www.marionnaud.fr']
     main_url = 'https://www.marionnaud.fr'
 
     def start_requests(self):

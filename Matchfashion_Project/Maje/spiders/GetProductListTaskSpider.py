@@ -118,7 +118,7 @@ import json
 class GetProductListTaskSpider(scrapy.Spider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    allowed_domains = ['https://fr.maje.com']
+    allowed_domains = ['fr.maje.com']
     main_url = 'https://fr.maje.com'
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可

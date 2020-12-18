@@ -83,6 +83,7 @@ class DiorDownloaderMiddleware:
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--window-size=1400,600')
             try:
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
