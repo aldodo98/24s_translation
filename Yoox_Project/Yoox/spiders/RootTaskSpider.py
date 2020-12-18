@@ -8,43 +8,47 @@ from Yoox.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from Yoox.settings import BOT_NAME
 from scrapy_redis.spiders import RedisSpider
 from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
 
-class RoottaskspiderSpider(scrapy.Spider):
+
+# class RoottaskspiderSpider(scrapy.Spider):
+class RoottaskspiderSpider(RedisSpider):
     name = 'RootTaskSpider'
     allowed_domains = ['www.yoox.com']
     redis_key = BOT_NAME+':RootTaskSpider'
 
-    def start_requests(self):
-        urls = [
-            "https://www.yoox.com/fr",
-            # 'https://www.yoox.com/fr/femme/shoponline/lunettes_mc#/dept=bagsaccwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27cchl%27%5d%7d&season=E'
+    # def start_requests(self):
+    #     urls = [
+    #         "https://www.yoox.com/fr",
+    #         # 'https://www.yoox.com/fr/femme/shoponline/lunettes_mc#/dept=bagsaccwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27cchl%27%5d%7d&season=E'
+    #
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
+    #             'RootId': '1'
+    #         })
+    #         # yield scrapy.Request(url=url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
+    #         #     'CategoryId': '1'
+    #         # })
 
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
-                'RootId': '1'
-            })
-            # yield scrapy.Request(url=url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
-            #     'CategoryId': '1'
-            # })
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(RoottaskspiderSpider, self).__init__(*args, **kwargs)
-    #
-    # def make_request_from_data(self, data):
-    #     receivedDictData = json.loads(str(data, encoding="utf-8"))
-    #     # print(receivedDictData)
-    #     # here you can use and FormRequest
-    #     formRequest = scrapy.FormRequest(url="https://www.powersante.com", dont_filter=True,
-    #                                      meta={'RootId': receivedDictData['Id']})
-    #     formRequest.headers = Headers(random.choice(self.headers_list))
-    #     return formRequest
-    #
-    # def schedule_next_requests(self):
-    #     for request in self.next_requests():
-    #         request.headers = Headers(random.choice(self.headers_list))
-    #         self.crawler.engine.crawl(request, spider=self)
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(RoottaskspiderSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url="https://www.yoox.com", dont_filter=True,
+                                         meta={'RootId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
         try:
@@ -72,33 +76,6 @@ class RoottaskspiderSpider(scrapy.Spider):
                     'RootId': response.meta['RootId'],
                     'Cate_1': cate_1
                 })
-
-                # for _ele in ele_list_2:
-                #     cate_2 = _ele.css('a::text').get()  # 二级目录
-                #     url_2 = _ele.css('a::attr(href)').get()  # 二级目录商品url
-                #     cate_list_3 = _ele.css('.section>ul>li:not(.back):not(.title):not(.all)')  # 三级目录列表
-                #     yield self.getCategoryItem(
-                #         cate_1,
-                #         cate_2,
-                #         None,
-                #         url_2,
-                #         response.meta['RootId']
-                #     )
-                #
-                #     for __ele in cate_list_3:
-                #         cate_3 = __ele.css('a::text').get()  # 三级目录
-                #         url_3 = __ele.css('a::attr(href)').get()  # 商品url
-                #         item_load = self.getCategoryItem(
-                #             cate_1,
-                #             cate_2,
-                #             cate_3,
-                #             url_3,
-                #             response.meta['RootId']
-                #         )
-                #         yield item_load
-                        # yield scrapy.Request(url=url_3, callback=self.getProducts, meta={
-                        #     'CategoryId': item_load['Id'],
-                        # }, headers=random.choice(self.headers_list))
 
     def parse_level(self, response):
         success = response.status == 200

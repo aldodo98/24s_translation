@@ -21,6 +21,9 @@ def do_strip(values):
 def lowercase_processor(values):
     return values.lower()
 
+def format_color_style(values):
+    return values.replace('background:', '')
+
 
 def processDesc(values):
     result = replace_escape_chars(values, which_ones=('\t', '\r', '\n'), replace_by=u' ')
@@ -37,11 +40,11 @@ def processDataPrice(values):
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     Level_Url_in = MapCompose(remove_tags, url_join)
-    CategoryLevel1_in = MapCompose(remove_tags, do_strip)
-    CategoryLevel2_in = MapCompose(remove_tags, do_strip)
-    CategoryLevel3_in = MapCompose(remove_tags, do_strip)
-    CategoryLevel4_in = MapCompose(remove_tags, do_strip)
-    CategoryLevel5_in = MapCompose(remove_tags, do_strip)
+    CategoryLevel1_in = MapCompose(remove_tags, processDesc, do_strip)
+    CategoryLevel2_in = MapCompose(remove_tags, processDesc, do_strip)
+    CategoryLevel3_in = MapCompose(remove_tags, processDesc, do_strip)
+    CategoryLevel4_in = MapCompose(remove_tags, processDesc, do_strip)
+    CategoryLevel5_in = MapCompose(remove_tags, processDesc, do_strip)
 
 
 class ProductInfoItemLoader(ItemLoader):
@@ -58,6 +61,7 @@ class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice)
     OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
+    Name_in = MapCompose(remove_tags, processDesc, do_strip)
 
 
 class VariableClassItemLoader(ItemLoader):
@@ -65,4 +69,5 @@ class VariableClassItemLoader(ItemLoader):
     DataCode_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
     NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
     OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
-    Name_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
+    Name_in = MapCompose(remove_tags, format_color_style, processDesc, convertMultipuleBlankToOne)
+    ColorSquaresRgb_in = MapCompose(remove_tags, format_color_style, processDesc)

@@ -19,22 +19,23 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
-# # Enables scheduling storing requests queue in redis.
-# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-#
-# # Ensure all spiders share same duplicates filter through redis.
-# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-#
-# SCHEDULER_PERSIST = True
-# FEED_EXPORT_ENCODING = 'utf-8'
-# REDIS_URL = 'redis://20.73.190.69:6379'
+# Enables scheduling storing requests queue in redis.
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
+REDIS_URL = 'redis://20.73.190.69:6379'
 
 DOWNLOADER_MIDDLEWARES = {
    'Yoox.middlewares.YooxDownloaderMiddleware': 543,
 }
 
 ITEM_PIPELINES = {
-   'Yoox.pipelines.YooxPipeline': 300,
+   # 'Yoox.pipelines.YooxPipeline': 300,
+   'Yoox.pipelines.RedisPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
