@@ -206,6 +206,8 @@ class DiorSpider(RedisSpider):
                 title_three_list = sec_level.css('ul.subMenu-level2>li.column')
                 for third_level in title_three_list:
                     title_three_title = third_level.css('span::text').get()
+                    if title_three_title is None:
+                        continue
                     catrgory_tree_three = self.get_category_tree(
                         third_level.css('a::attr(href)').get(),
                         title_one_title,

@@ -20,7 +20,7 @@ MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
 ITEM_PIPELINES = {
-   'ClaudiePierlot.pipelines.JsonPipeline': 300,
+   'ClaudiePierlot.pipelines.RedisPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -28,7 +28,16 @@ ITEM_PIPELINES = {
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
+REDIS_URL = 'redis://20.73.190.69:6379'
+# Obey robots.txt rules
+ROBOTSTXT_OBEY = True
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 

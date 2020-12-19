@@ -115,18 +115,38 @@ import json
 #         }
 #     ]
 
-class GetProductListTaskSpider(scrapy.Spider):
+class GetProductListTaskSpider(RedisSpider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
     allowed_domains = ['fr.claudiepierlot.com']
     main_url = "https://fr.claudiepierlot.com"
 
-    def start_requests(self):
-        urls = [
-            "https://fr.claudiepierlot.com/fr/categories/robes-2/"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(GetProductListTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
+                                         meta={'CategoryTreeId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
+
+    # def start_requests(self):
+    #     urls = [
+    #         "https://fr.claudiepierlot.com/fr/categories/robes-2/"
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+
+
 
     def parse(self, response):
         try:
@@ -138,19 +158,19 @@ class GetProductListTaskSpider(scrapy.Spider):
 
 
     def getProducts(self, response):
-        # category_id = response.meta['CategoryTreeId']
+        category_id = response.meta['CategoryTreeId']
         lists = response.css('#search-result-items li')
         for item in lists:
             product_info = ProductInfo()
             product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
-            # product_itemloader.add_value('CategoryTreeId', category_id)
+            product_itemloader.add_value('CategoryTreeId', category_id)
             product_itemloader.add_value('Id', str(uuid.uuid4()))
             product_itemloader.add_value('ProjectName', BOT_NAME)
             product_itemloader.add_value('ProductName', item.css('.titleProduct a.name-link::text').get())
             product_itemloader.add_value('Price', item.css('.product-pricing .product-sales-price::text').get())
             url = item.css('a.thumb-link::attr("href")').get()
             if url is None:
-                yield None
+                continue
             else:
                 if self.main_url not in url:
                     product_itemloader.add_value('ProductUrl', self.main_url + url)

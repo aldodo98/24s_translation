@@ -27,6 +27,8 @@ class CategoryTreeItemLoader(ItemLoader):
 
 class ProductInfoItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    ProductName_in = MapCompose(remove_tags, processDesc)
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()

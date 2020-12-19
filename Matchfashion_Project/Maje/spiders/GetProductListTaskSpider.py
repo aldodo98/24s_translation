@@ -167,6 +167,8 @@ class GetProductListTaskSpider(scrapy.Spider):
             url = item.css('.titleProduct>a::attr("href")').get()
             if url is not None and self.main_url not in url:
                 product_itemloader.add_value('ProductUrl', self.main_url + url)
+            elif url is None:
+                continue
             else:
                 product_itemloader.add_value('ProductUrl', url)
             product_itemloader.add_value('ProductName', item.css('.titleProduct>a::text').get())
