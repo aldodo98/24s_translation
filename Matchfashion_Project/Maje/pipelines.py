@@ -12,7 +12,7 @@ import pymysql
 from scrapy.utils.serialize import ScrapyJSONEncoder
 from scrapy_redis.pipelines import RedisPipeline
 
-from Maje.items import CategoryTree
+from Maje.items import CategoryTree, ProductInfo, Product
 
 
 class MajePipeline:

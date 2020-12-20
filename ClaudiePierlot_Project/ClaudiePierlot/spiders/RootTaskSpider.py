@@ -136,17 +136,37 @@ from string import Template
 #         }
 #     ]
 
-class DiorSpider(scrapy.Spider):
+class RootTaskSpider(RedisSpider):
     name = 'RootTaskSpider'
     allowed_domains = ['fr.claudiepierlot.com']
     main_url = 'https://fr.claudiepierlot.com'
+    redis_key = BOT_NAME+':RootTaskSpider'
 
-    def start_requests(self):
-        urls = [
-            "https://fr.claudiepierlot.com"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(RootTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url="https://fr.claudiepierlot.com",dont_filter=True,
+                                         meta={'RootId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
+
+    # def start_requests(self):
+    #     urls = [
+    #         "https://fr.claudiepierlot.com"
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
 
     def parse(self, response):
 
@@ -168,7 +188,7 @@ class DiorSpider(scrapy.Spider):
                     title_one_title,
                     ''
                     '',
-                    # response.meta['RootId']
+                    response.meta['RootId']
                 )
             results.append(catrgory_tree_one)
             # 二级菜单
@@ -186,11 +206,14 @@ class DiorSpider(scrapy.Spider):
                 title_three_list = sec_level.css('li.ColumnList>ul>li')
                 for third_level in title_three_list:
                     title_three_title = third_level.css('span::text').get()
+                    if title_three_title is None:
+                        continue
                     catrgory_tree_three = self.get_category_tree(
                         third_level.css('a::attr(href)').get(),
                         title_one_title,
                         title_two_title,
-                        title_three_title
+                        title_three_title,
+                        response.meta['RootId']
                     )
                     results.append(catrgory_tree_three)
 

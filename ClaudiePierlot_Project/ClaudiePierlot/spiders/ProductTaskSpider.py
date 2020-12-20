@@ -4,26 +4,40 @@ import scrapy
 import json
 import random
 
-from ClaudiePierlot.itemloader import VariableClassItemLoader, MarionnaudItemLoader
+from ClaudiePierlot.itemloader import VariableClassItemLoader, ProductInfoItemLoader, ProductItemLoader
 from ClaudiePierlot.items import Product, AttributeBasicInfoClass, ProductAttributeClass, MappingClass, VariableClass
 from scrapy.selector import Selector
 from scrapy.loader import ItemLoader
 import requests
 
+from scrapy.http.headers import Headers
+from scrapy_redis.spiders import RedisSpider
 
-class ClaudiePierlotProductSpider(scrapy.Spider):
-    name = 'claudiePierlotProductScrapy'
-    # start_urls = ['https://www.dior.com/en_us/products/couture-051R07A1238_X9330-short-dress-black-and-white-check-wool'
+from ClaudiePierlot.settings import BOT_NAME
 
-    def start_requests(self):
-        urls =[
-            'https://fr.claudiepierlot.com/fr/accessoires/chaussures/120alegriatall/3609140390629.html'
-        ]
-        for url in urls:
-            # Pick a random browser headers
-            headers = random.choice(self.headers_list)
-            print(headers)
-            yield scrapy.Request(url=url, callback=self.parse, headers=headers)
+
+class ProductTaskSpider(RedisSpider):
+    name = 'ProductTaskSpider'
+    redis_key = BOT_NAME + ':ProductTaskSpider'
+    allowed_domains = ['fr.claudiepierlot.com']
+    main_url = 'https://fr.claudiepierlot.com'
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(ProductTaskSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['ProductUrl'], dont_filter=True,
+                                         meta={'TaskId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
         product = Product()
@@ -34,8 +48,8 @@ class ClaudiePierlotProductSpider(scrapy.Spider):
             # 获取基本信息
             text = filterRes.get()
             selector = Selector(text=text)
-            productItemloader = MarionnaudItemLoader(item=product, response=text, selector=selector)
-            productItemloader.add_value('TaskId', 'test')
+            productItemloader = ProductItemLoader(item=product, response=text, selector=selector)
+            productItemloader.add_value('TaskId', response.meta['TaskId'])
             productItemloader.add_css('Name', 'h1.product-name::text')
             productItemloader.add_value('ShortDescription', '')
             self.Price = filterRes.css('span.price-sales::text').get()
@@ -46,7 +60,7 @@ class ClaudiePierlotProductSpider(scrapy.Spider):
             productItemloader.add_css('FullDescription', 'div.jspPane>p::text')
             item = productItemloader.load_item()
             # 获取属性
-            productAttributes = self.getProductAttributes(filterRes)
+            productAttributes = self.getProductAttributes(response)
             item['ProductAttributes'] = productAttributes
             yield item
         else:
@@ -163,8 +177,6 @@ class ClaudiePierlotProductSpider(scrapy.Spider):
         result = []
         for item in list:
             href = item.css('a::attr("href")').get()
-            result = requests.get(href).text
-            print(result)
             text = item.get()
             selector = Selector(text=text)
             attributeVariable = VariableClass()
