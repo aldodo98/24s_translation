@@ -3,10 +3,25 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+from time import sleep
 from scrapy import signals
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
-# useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+
+chrome_options=Options()
+# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-gpu')
+# from selenium.webdriver.chrome.options import Options
+# useful for handling different item types with a single interface
 
 
 class MarionnaudSpiderMiddleware:
@@ -69,15 +84,35 @@ class MarionnaudDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
+        print(request.meta, 8888888888888888888)
+        if 'RootId' in request.meta:
+            return None
+        if spider.name == 'RootTaskSpider':
+            if 'Type' in request.meta and request.meta['Type'] == 'menu':
+                return None
+            try:
+                print(request)
+                self.driver = webdriver.Chrome(options=chrome_options)
+                # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
+                self.driver.get(request.url)
+                locator = (By.CSS_SELECTOR, 'div#modal')
+                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located(locator))
+                # if self.is_element_exist('div.close.inner_close'):
+                self.driver.find_element_by_css_selector('div.close.inner_close').click()
 
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
+                while self.is_element_exist('a#instant-search-results-show-more'):
+                    self.driver.execute_script("document.getElementById('instant-search-results-show-more').click()")
+                    sleep(4)
+
+                return HtmlResponse(url=request.url,
+                                    body=self.driver.page_source,
+                                    request=request,
+                                    encoding='utf-8',
+                                    status=200)
+            except TimeoutException:
+                return HtmlResponse(url=request.url, status=500, request=request)
+            finally:
+                self.driver.close()
         return None
 
     def process_response(self, request, response, spider):
@@ -101,3 +136,13 @@ class MarionnaudDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+    def is_element_exist(self, element):
+        flag = True
+        browser = self.driver
+        try:
+            flag = browser.find_element_by_css_selector(element).is_displayed()
+            return flag
+        except:
+            flag = False
+            return flag
