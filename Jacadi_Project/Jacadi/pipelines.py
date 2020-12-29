@@ -5,7 +5,11 @@
 
 
 # useful for handling different item types with a single interface
+import json
+
 from itemadapter import ItemAdapter
+from scrapy.utils.serialize import ScrapyJSONEncoder
+
 from Jacadi.items import CategoryTree, ProductInfo, Product
 from scrapy_redis.pipelines import RedisPipeline
 import pymysql
@@ -96,3 +100,14 @@ class JacadiPipeline:
         sql = 'INSERT INTO spiderproductcrawltasks(Id,CategoryTreeId,ProductId,ProductName,ProductUrl,Price,ProjectName) VALUES(%s,%s,%s,%s,%s,%s,%s)'
         self.db_cur.execute(sql, values)
         self.db_conn.commit()
+
+class JsonPipeline:
+    def open_spider(self, spider):
+        self.file = open('items.json', 'w', encoding='utf-8')
+    def close_spider(self, spider):
+        self.file.close()
+
+    def process_item(self, item, spider):
+        line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
+        self.file.writelines(line)
+        return item

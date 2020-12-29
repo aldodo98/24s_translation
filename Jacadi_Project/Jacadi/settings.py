@@ -35,7 +35,7 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 ITEM_PIPELINES = {
-   'Jacadi.pipelines.JacadiPipeline': 300,
+   'Jacadi.pipelines.JsonPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
