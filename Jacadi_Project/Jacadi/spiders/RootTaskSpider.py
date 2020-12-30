@@ -10,103 +10,135 @@ from Jacadi.settings import BOT_NAME
 import json
 
 
-# class RoottaskspiderSpider(RedisSpider):
-class RoottaskspiderSpider(scrapy.Spider):
+class RoottaskspiderSpider(RedisSpider):
+# class RoottaskspiderSpider(scrapy.Spider):
     name = 'RootTaskSpider'
     allowed_domains = ['www.jacadi.fr']
     redis_key = BOT_NAME+':RootTaskSpider'
 
-    # # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(RoottaskspiderSpider, self).__init__(*args, **kwargs)
-    #
-    # def make_request_from_data(self, data):
-    #     receivedDictData = json.loads(str(data, encoding="utf-8"))
-    #     # print(receivedDictData)
-    #     # here you can use and FormRequest
-    #     formRequest = scrapy.FormRequest(url="https://www.celine.com/fr-fr/home", dont_filter=True,
-    #                                      meta={'RootId': receivedDictData['Id']})
-    #     formRequest.headers = Headers(random.choice(self.headers_list))
-    #     return formRequest
-    #
-    # def schedule_next_requests(self):
-    #     for request in self.next_requests():
-    #         request.headers = Headers(random.choice(self.headers_list))
-    #         self.crawler.engine.crawl(request, spider=self)
+    # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(RoottaskspiderSpider, self).__init__(*args, **kwargs)
 
-    def start_requests(self):
-        urls = [
-            'http://www.jacadi.fr/'
-        ]
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url="https://www.jacadi.fr", dont_filter=True,
+                                         meta={'RootId': receivedDictData['Id']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
 
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
-                'RootId': '1'
-            })
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
+
+    # def start_requests(self):
+    #     urls = [
+    #         'http://www.jacadi.fr/'
+    #     ]
+    #
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
+    #             'RootId': '1'
+    #         })
 
 
     def parse(self, response):
         success = response.status == 200
         if success:
             levels = self.generate_levels(response)
-            print(response.css('div.js-aside').get(), 7777777777777777)
-            yield response.css('ul.j-nav.smash-list').get()
+            for node in levels:
+                if node is None:
+                    continue
+                yield node
 
-            # for node in levels:
-            #     yield node
+            # eaux = response.css('')
 
     def generate_levels(self, response):
         results = list()
-        print(len(response.css('ul.j-nav.smash-list')))
-        yield response.css('ul.j-nav.smash-list').get()
-        # for level in response.css('ul.j-nav.smash-list')[1:4]:
-        #     print(level)
-            # s = Template('[aria-labelledby="${Level_Id}"]')
-            # s_selector = s.substitute(Level_Id=level.css("::attr(id)").get())
-            #
-            # title_one_list = response.css(
-            #     'div[data-level="1"]' + s_selector + '>ul>li:not(.s-hide-on-desktop) a['
-            #                                          'data-level="1"]')
-            # for title in title_one_list:
-            #     catrgory_tree_one = self.get_category_tree(
-            #         title.css('::attr(href)').get(),
-            #         level.css('::text').get(),
-            #         title.css('::text').get(),
-            #         '',
-            #         response.meta['RootId']
-            #     )
-            #     results.append(catrgory_tree_one)
-            # title_two_list = response.css('div[data-level="1"]' + s_selector + '>ul>li')
-            # for item in title_two_list:
-            #     for li in item.css('ul>li:not(.s-hide-on-desktop)'):
-            #         catrgory_tree_two = self.get_category_tree(
-            #             li.css('a::attr(href)').get(),
-            #             level.css('::text').get(),
-            #             item.css('a:first-of-type::text').get(),
-            #             li.css('a::text').get(),
-            #             response.meta['RootId']
-            #         )
-            #         results.append(catrgory_tree_two)
+        # 前6个
+        lis = response.css('ul.j-nav.smash-list li.j-nav-itemParent')
 
-        # return results
+        for level in lis:
+            results.append(
+                self.get_category_tree(
+                    level.css('a.j-link-parent::attr(href)').get(),
+                    response.meta['RootId'],
+                    level.css('a.j-link-parent').get()
+                )
+            )
 
-    def get_category_tree(self, url, c_one, c_two, c_three='', c_rootId=''):
+            for level_two in level.xpath('./ul/li'):
+                results.append(
+                    self.get_category_tree(
+                        level_two.xpath('./a/@href').get(),
+                        response.meta['RootId'],
+                        level.css('a.j-link-parent').get(),
+                        level_two.xpath('./a/text()').get()
+                    )
+                )
 
+                if len(level_two.xpath('./div')) == 0:
+                    continue
+
+                level_three_titles = level_two.css('p.j-title-list')
+                level_three_uls = level_two.css('ul.smash-list')
+
+                for index, ul in enumerate(level_three_uls):
+                    for a in ul.css('a'):
+                        results.append(
+                            self.get_category_tree(
+                                a.css('::attr(href)').get(),
+                                response.meta['RootId'],
+                                level.css('a.j-link-parent').get(),
+                                level_two.xpath('./a/text()').get(),
+                                level_three_titles[index].css('::text').get(),
+                                a.css('::text').get()
+                            )
+                        )
+
+        chambre = response.css('ul.j-nav.smash-list>li.j-nav-mega')
+        results.append(
+            self.get_category_tree(
+                chambre.xpath('./a/@href').get(),
+                response.meta['RootId'],
+                chambre.xpath('./a/text()').get(),
+            )
+        )
+
+        chambre_level_two_titles = chambre.css('p.j-title-list')
+        chambre_level_two_uls = chambre.css('ul.smash-list')
+
+        for index, ul in enumerate(chambre_level_two_uls):
+            for a in ul.css('a'):
+                results.append(
+                    self.get_category_tree(
+                        a.css('::attr(href)').get(),
+                        response.meta['RootId'],
+                        chambre.xpath('./a/text()').get(),
+                        chambre_level_two_titles[index].css('::text').get(),
+                        a.css('::text').get()
+                    )
+                )
+
+        return results
+
+    def get_category_tree(self, url, c_rootId, c_one, c_two='', c_three='', c_four=''):
+        if url is None or url == '':
+            return None
         category_tree = CategoryTree()
         category_itemloader = CategoryTreeItemLoader(item=category_tree)
         category_itemloader.add_value('Id', str(uuid.uuid4()))
         category_itemloader.add_value('RootId', c_rootId)
-        if self.main_url not in url:
-            category_itemloader.add_value('Level_Url', self.main_url + url)
-        else:
-            category_itemloader.add_value('Level_Url', url)
-
+        category_itemloader.add_value('Level_Url', url)
         category_itemloader.add_value('ProjectName', BOT_NAME)
         category_itemloader.add_value('CategoryLevel1', c_one)
         category_itemloader.add_value('CategoryLevel2', c_two)
         category_itemloader.add_value('CategoryLevel3', c_three)
-        category_itemloader.add_value('CategoryLevel4', '')
+        category_itemloader.add_value('CategoryLevel4', c_four)
         category_itemloader.add_value('CategoryLevel5', '')
 
         item_load = category_itemloader.load_item()
