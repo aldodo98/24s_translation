@@ -54,6 +54,9 @@ class ProductInfoItemLoader(ItemLoader):
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    FullDescription_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Name_in = MapCompose(remove_tags, processDesc)
 
 
 class VariableClassItemLoader(ItemLoader):

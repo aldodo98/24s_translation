@@ -5,7 +5,11 @@
 
 
 # useful for handling different item types with a single interface
+import json
+
 from itemadapter import ItemAdapter
+from scrapy.utils.serialize import ScrapyJSONEncoder
+
 from Jacadi.items import CategoryTree, ProductInfo, Product
 from scrapy_redis.pipelines import RedisPipeline
 # import pymysql
