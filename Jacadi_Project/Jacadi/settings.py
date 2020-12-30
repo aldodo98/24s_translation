@@ -19,15 +19,14 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
-# # Enables scheduling storing requests queue in redis.
-# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-#
-# # Ensure all spiders share same duplicates filter through redis.
-# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-#
-# SCHEDULER_PERSIST = True
-# FEED_EXPORT_ENCODING = 'utf-8'
-# REDIS_URL = 'redis://20.73.190.69:6379'
+# Enables scheduling storing requests queue in redis.
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
 REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
 
 DOWNLOADER_MIDDLEWARES = {
@@ -35,7 +34,8 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 ITEM_PIPELINES = {
-   'Jacadi.pipelines.JacadiPipeline': 300,
+   # 'Jacadi.pipelines.JacadiPipeline': 300,
+   'Jacadi.pipelines.RedisPipeline': 300
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
