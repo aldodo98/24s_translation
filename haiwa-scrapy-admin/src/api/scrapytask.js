@@ -1,7 +1,12 @@
 import request from '@/utils/request'
 import configs from '@/config/env'
 
-const BACKEND_API_BASE_URL = configs.production.WEB_API_SERVICES
+let BACKEND_API_BASE_URL = configs.production.WEB_API_SERVICES
+const NODE_ENV = process.env.NODE_ENV
+if (NODE_ENV === 'uat') {
+  BACKEND_API_BASE_URL = configs.uat.WEB_API_SERVICES
+}
+
 const api = {
   user: '/user',
   role: '/role',
