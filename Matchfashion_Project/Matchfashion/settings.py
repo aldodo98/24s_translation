@@ -1,4 +1,4 @@
-# Scrapy settings for Jacadi project
+# Scrapy settings for Celine project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'Jacadi'
+BOT_NAME = 'Matchfashion'
 
-SPIDER_MODULES = ['Jacadi.spiders']
-NEWSPIDER_MODULE = 'Jacadi.spiders'
+SPIDER_MODULES = ['Matchfashion.spiders']
+NEWSPIDER_MODULE = 'Matchfashion.spiders'
 
 DOWNLOAD_DELAY = 3
 
@@ -19,27 +19,23 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
-# Enables scheduling storing requests queue in redis.
-SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-
-# Ensure all spiders share same duplicates filter through redis.
-DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-
-SCHEDULER_PERSIST = True
-FEED_EXPORT_ENCODING = 'utf-8'
-REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
-
-DOWNLOADER_MIDDLEWARES = {
-   # 'Jacadi.middlewares.JacadiDownloaderMiddleware': 543,
-}
+# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+#
+# # Ensure all spiders share same duplicates filter through redis.
+# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+#
+# SCHEDULER_PERSIST = True
+# FEED_EXPORT_ENCODING = 'utf-8'
+# REDIS_URL = 'redis://20.73.190.69:6379'
+# # Obey robots.txt rules
+# ROBOTSTXT_OBEY = True
 
 ITEM_PIPELINES = {
-   # 'Jacadi.pipelines.JacadiPipeline': 300,
-   'Jacadi.pipelines.RedisPipeline': 300
+   'Matchfashion.pipelines.JsonPipeline': 300,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'Jacadi (+http://www.yourdomain.com)'
+#USER_AGENT = 'Celine (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -70,14 +66,14 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'Jacadi.middlewares.JacadiSpiderMiddleware': 543,
+#    'Celine.middlewares.CelineSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'Jacadi.middlewares.JacadiDownloaderMiddleware': 543,
-#}
+# DOWNLOADER_MIDDLEWARES = {
+#    'Maje.middlewares.MajeDownloaderMiddleware': 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -87,9 +83,7 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'Jacadi.pipelines.JacadiPipeline': 300,
-#}
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
