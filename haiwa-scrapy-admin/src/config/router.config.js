@@ -8,6 +8,11 @@ const RouteView = {
   render: (h) => h('router-view')
 }
 
+let ScrapydWebUrl = configs.production.Scrapyd_Web_Url
+const NODE_ENV = process.env.NODE_ENV
+if (NODE_ENV === 'uat') {
+  ScrapydWebUrl = configs.uat.Scrapyd_Web_Url
+}
 export const asyncRouterMap = [
 
   {
@@ -51,7 +56,7 @@ export const asyncRouterMap = [
       },
        // 外部链接
       {
-        path: configs.production.Scrapyd_Web_Url,
+        path: ScrapydWebUrl,
         name: 'Scrapyd Server Monitor',
         meta: { title: 'Scrapyd Server Monitor', target: '_blank' }
       }
