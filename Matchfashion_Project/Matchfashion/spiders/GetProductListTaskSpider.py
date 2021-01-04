@@ -118,8 +118,8 @@ import json
 class GetProductListTaskSpider(scrapy.Spider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
-    allowed_domains = ['fr.maje.com']
-    main_url = 'https://fr.maje.com'
+    allowed_domains = ['www.matchesfashion.com']
+    main_url = 'https://www.matchesfashion.com'
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
     def __init__(self, *args, **kwargs):
@@ -139,12 +139,13 @@ class GetProductListTaskSpider(scrapy.Spider):
         for request in self.next_requests():
             request.headers = Headers(random.choice(self.headers_list))
             self.crawler.engine.crawl(request, spider=self)
-    # def start_requests(self):
-    #     urls = [
-    #         "https://fr.maje.com/fr/pret-a-porter/collection/toute-la-collection/"
-    #     ]
-    #     for url in urls:
-    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list))
+    def start_requests(self):
+        urls = [
+            "https://www.matchesfashion.com/intl/womens/shop/clothing/jeans"
+        ]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list)
+                                 )
 
     def parse(self, response):
         try:
@@ -156,28 +157,32 @@ class GetProductListTaskSpider(scrapy.Spider):
 
 
     def getProducts(self, response):
-        category_id = response.meta['CategoryTreeId']
-        lists = response.css('#search-result-items li')
+        # category_id = response.meta['CategoryTreeId']
+        category_id = 'xxx'
+        lists = response.css('.lister__wrapper li')
         for item in lists:
             product_info = ProductInfo()
             product_itemloader = ProductInfoItemLoader(item=product_info, response=response)
             product_itemloader.add_value('CategoryTreeId', category_id)
             product_itemloader.add_value('Id', str(uuid.uuid4()))
             product_itemloader.add_value('ProjectName', BOT_NAME)
-            url = item.css('.titleProduct>a::attr("href")').get()
+            url = item.css('a::attr("href")').get()
             if url is not None and self.main_url not in url:
                 product_itemloader.add_value('ProductUrl', self.main_url + url)
             elif url is None:
                 continue
             else:
                 product_itemloader.add_value('ProductUrl', url)
-            product_itemloader.add_value('ProductName', item.css('.titleProduct>a::text').get())
-            product_itemloader.add_value('Price', item.css('.product-sales-price::text').get())
+            product_itemloader.add_value('ProductName', item.css('.lister__item__title::text').get())
+            product_itemloader.add_value('Price', item.css('.lister__item__price-full::text').get())
 
             yield product_itemloader.load_item()
-        if len(response.css('.loadmore-btn .js-loadmore')) > 0:
-            nextUrl = response.css('.loadmore-btn .js-loadmore::attr("href")').get()
-            sleep(5)
+        if len(response.css('.redefine__right__pager .next')) > 0:
+            nextUrl = response.css('.redefine__right__pager .next a::attr("href")').get()
+            if nextUrl is not None and self.main_url not in nextUrl:
+                nextUrl = self.main_url + nextUrl
+            sleep(2)
+            print(nextUrl)
             yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list))
         else:
             return
