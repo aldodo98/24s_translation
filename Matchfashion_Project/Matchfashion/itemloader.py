@@ -1,5 +1,5 @@
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose
+from itemloaders.processors import TakeFirst, MapCompose
 from w3lib.html import remove_tags, replace_escape_chars
 
 def lowercase_processor(values):
@@ -21,6 +21,20 @@ def convertMultipuleBlankToOne(values):
     return ' '.join(values.split())
 
 
+def do_strip(values):
+    return values and values.strip()
+
+def clear_line_feed(values):
+    result = replace_escape_chars(values, which_ones='\r\n', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\n', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\r', replace_by=u'')
+    return result
+
+def clear_new(values):
+    result = replace_escape_chars(values, which_ones='Now', replace_by=u'')
+    return result.split('/')[0]
+
+
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
 
@@ -32,15 +46,16 @@ class ProductInfoItemLoader(ItemLoader):
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
-    default_output_processor = TakeFirst()
     FullDescription_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
-    Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Price_in = MapCompose(remove_tags, processDesc, processDataPrice, clear_new, do_strip, convertMultipuleBlankToOne)
+    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Name_in = MapCompose(remove_tags, do_strip, clear_line_feed)
 
 
 class VariableClassItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     DataCode_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
-    NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, clear_new, do_strip, convertMultipuleBlankToOne)
     OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
     Name_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
     FullDescription_in = MapCompose(remove_tags, processDesc)
