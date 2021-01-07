@@ -64,28 +64,39 @@ class MatchfashionSpider(scrapy.Spider):
             catrgory_tree_one = self.get_category_tree(
                     title_one.css('a::attr(href)').get(),
                     title_one_title,
-                    ''
+                    '',
                     '',
                     response.meta['RootId']
                 )
             results.append(catrgory_tree_one)
-            # 二级菜单
-            title_two_list = level.css('.sub_menu__wrapper>div:nth-child(1)>div')
-            for sec_level in title_two_list:
-                title_two_title = sec_level.css('h3::text').get()
-                # catrgory_tree_two = self.get_category_tree(
-                #     sec_level.css('div[role="heading"] a::attr(href)').get(),
-                #     title_one_title,
-                #     title_two_title,
-                #     '',
-                #     # response.meta['RootId']
-                # )
-                # results.append(catrgory_tree_two)
-                title_three_list = sec_level.css('ul>li')
+            if title_one_title == 'Sale':
+                title_two_list = level.css('.sub_menu__wrapper>div.submenu__promo>div.sale>div')
+                for sec_level in title_two_list:
+                    title_two_ele = sec_level.css('p').get()
+                    if title_two_ele is None:
+                        continue
+                    else:
+                        title_two_title = sec_level.css('p::text').get()
+                        if (sec_level.css('p::text').get()) is None:
+                            title_two_title = title_two_list[0].css('p::text').get()
+                        title_three_list = sec_level.css('p~a')
+                        for third_level in title_three_list:
+                            title_three_title = third_level.css('a::text').get()
+                            if title_three_title is None:
+                                continue
+                            catrgory_tree_three = self.get_category_tree(
+                                third_level.css('a::attr(href)').get(),
+                                title_one_title,
+                                title_two_title,
+                                title_three_title,
+                                response.meta['RootId']
+                            )
+                            results.append(catrgory_tree_three)
+            elif title_one_title == 'Just In':
+                title_two_title = level.css('.sub_menu__wrapper .just-in__links p::text').get()
+                title_three_list = level.css('.sub_menu__wrapper .just-in__links a')
                 for third_level in title_three_list:
                     title_three_title = third_level.css('a::text').get()
-                    if title_three_title is None:
-                        continue
                     catrgory_tree_three = self.get_category_tree(
                         third_level.css('a::attr(href)').get(),
                         title_one_title,
@@ -94,6 +105,34 @@ class MatchfashionSpider(scrapy.Spider):
                         response.meta['RootId']
                     )
                     results.append(catrgory_tree_three)
+            elif title_one_title == 'Stories':
+                break
+            else:
+                # 二级菜单
+                title_two_list = level.css('.sub_menu__wrapper>div:nth-child(1)>div')
+                for sec_level in title_two_list:
+                    title_two_title = sec_level.css('h3::text').get()
+                    # catrgory_tree_two = self.get_category_tree(
+                    #     sec_level.css('div[role="heading"] a::attr(href)').get(),
+                    #     title_one_title,
+                    #     title_two_title,
+                    #     '',
+                    #     # response.meta['RootId']
+                    # )
+                    # results.append(catrgory_tree_two)
+                    title_three_list = sec_level.css('ul>li')
+                    for third_level in title_three_list:
+                        title_three_title = third_level.css('a::text').get()
+                        if title_three_title is None:
+                            continue
+                        catrgory_tree_three = self.get_category_tree(
+                            third_level.css('a::attr(href)').get(),
+                            title_one_title,
+                            title_two_title,
+                            title_three_title,
+                            response.meta['RootId']
+                        )
+                        results.append(catrgory_tree_three)
 
         return results
 
