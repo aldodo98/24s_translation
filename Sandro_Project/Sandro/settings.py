@@ -1,4 +1,4 @@
-# Scrapy settings for Celine project
+# Scrapy settings for Sandro project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,10 +7,10 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'Matchfashion'
+BOT_NAME = 'Sandro'
 
-SPIDER_MODULES = ['Matchfashion.spiders']
-NEWSPIDER_MODULE = 'Matchfashion.spiders'
+SPIDER_MODULES = ['Sandro.spiders']
+NEWSPIDER_MODULE = 'Sandro.spiders'
 
 DOWNLOAD_DELAY = 3
 
@@ -19,23 +19,26 @@ MYSQL_HOST = 'localhost'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = 'root'
 
-# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-#
-# # Ensure all spiders share same duplicates filter through redis.
-# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-#
-# SCHEDULER_PERSIST = True
-# FEED_EXPORT_ENCODING = 'utf-8'
-# REDIS_URL = 'redis://20.73.190.69:6379'
-# # Obey robots.txt rules
-# ROBOTSTXT_OBEY = True
+# Enables scheduling storing requests queue in redis.
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+
+# Ensure all spiders share same duplicates filter through redis.
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+
+SCHEDULER_PERSIST = True
+FEED_EXPORT_ENCODING = 'utf-8'
+REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
 
 ITEM_PIPELINES = {
-   'Matchfashion.pipelines.RedisPipeline': 300,
+   'Sandro.pipelines.SandroPipeline': 300,
+}
+
+DOWNLOADER_MIDDLEWARES = {
+   'Sandro.middlewares.SandroDownloaderMiddleware': 543,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'Celine (+http://www.yourdomain.com)'
+#USER_AGENT = 'Sandro (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -66,14 +69,14 @@ ROBOTSTXT_OBEY = False
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'Celine.middlewares.CelineSpiderMiddleware': 543,
+#    'Sandro.middlewares.SandroSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'Maje.middlewares.MajeDownloaderMiddleware': 543,
-# }
+#DOWNLOADER_MIDDLEWARES = {
+#    'Sandro.middlewares.SandroDownloaderMiddleware': 543,
+#}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -83,7 +86,9 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
+#ITEM_PIPELINES = {
+#    'Sandro.pipelines.SandroPipeline': 300,
+#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
