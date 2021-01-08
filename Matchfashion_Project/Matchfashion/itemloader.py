@@ -34,9 +34,15 @@ def clear_new(values):
     result = replace_escape_chars(values, which_ones='Now', replace_by=u'')
     return result.split('/')[0]
 
+def strip(values):
+    return values.strip()
+
 
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    CategoryLevel1_in = MapCompose(remove_tags, processDesc, strip)
+    CategoryLevel2_in = MapCompose(remove_tags, processDesc, strip)
+    CategoryLevel3_in = MapCompose(remove_tags, processDesc, strip)
 
 
 class ProductInfoItemLoader(ItemLoader):

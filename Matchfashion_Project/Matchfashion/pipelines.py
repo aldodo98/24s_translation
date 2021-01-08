@@ -10,6 +10,7 @@ import json
 from itemadapter import ItemAdapter
 # import pymysql
 # from scrapy.utils.serialize import ScrapyJSONEncoder
+from scrapy.utils.serialize import ScrapyJSONEncoder
 from scrapy_redis.pipelines import RedisPipeline
 
 from Matchfashion.items import CategoryTree, ProductInfo, Product
@@ -83,16 +84,16 @@ from Matchfashion.items import CategoryTree, ProductInfo, Product
 #         self.db_conn.commit()
 
 
-# class JsonPipeline:
-#     def open_spider(self, spider):
-#         self.file = open('items.json', 'w', encoding='utf-8')
-#     def close_spider(self, spider):
-#         self.file.close()
-#
-#     def process_item(self, item, spider):
-#         line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
-#         self.file.writelines(line)
-#         return item
+class JsonPipeline:
+    def open_spider(self, spider):
+        self.file = open('items.json', 'w', encoding='utf-8')
+    def close_spider(self, spider):
+        self.file.close()
+
+    def process_item(self, item, spider):
+        line = json.dumps(dict(item), cls=ScrapyJSONEncoder) + "\n"
+        self.file.writelines(line)
+        return item
 
 class RedisPipeline(RedisPipeline):
 
