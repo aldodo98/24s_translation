@@ -57,6 +57,7 @@ class ProductItemLoader(ItemLoader):
     FullDescription_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
     Name_in = MapCompose(remove_tags, processDesc)
+    ImageThumbnailUrl_in = MapCompose(remove_tags, url_join)
 
 
 class VariableClassItemLoader(ItemLoader):

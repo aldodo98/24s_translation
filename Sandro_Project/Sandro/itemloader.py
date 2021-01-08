@@ -1,8 +1,9 @@
 from scrapy.loader import ItemLoader
 from itemloaders.processors import TakeFirst, MapCompose
 from w3lib.html import remove_tags, replace_escape_chars
+import re
 
-main_url = 'https://www.yoox.com'
+main_url = 'https://fr.sandro-paris.com'
 
 
 def url_join(values):
@@ -22,7 +23,11 @@ def lowercase_processor(values):
     return values.lower()
 
 def format_color_style(values):
-    return values.replace('background:', '')
+    result = re.findall(r"[(](.*?)[)]", values)
+    if len(result) > 0:
+        return result[0]
+    else:
+        return values
 
 
 def processDesc(values):
@@ -62,6 +67,8 @@ class ProductItemLoader(ItemLoader):
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice)
     OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
     Name_in = MapCompose(remove_tags, processDesc, do_strip)
+    FullDescription_in = MapCompose(remove_tags, do_strip)
+    ImageThumbnailUrl_in = MapCompose(remove_tags, url_join)
 
 
 class VariableClassItemLoader(ItemLoader):
@@ -69,5 +76,5 @@ class VariableClassItemLoader(ItemLoader):
     DataCode_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
     NewPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
     OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice)
-    Name_in = MapCompose(remove_tags, format_color_style, processDesc, convertMultipuleBlankToOne)
-    ColorSquaresRgb_in = MapCompose(remove_tags, format_color_style, processDesc)
+    Name_in = MapCompose(remove_tags, format_color_style, processDesc, convertMultipuleBlankToOne, do_strip)
+    ColorSquaresRgb_in = MapCompose(remove_tags, format_color_style, url_join, processDesc)

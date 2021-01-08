@@ -30,7 +30,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
 
 ITEM_PIPELINES = {
-   'Sandro.pipelines.SandroPipeline': 300,
+   'Sandro.pipelines.RedisPipeline': 300,
 }
 
 DOWNLOADER_MIDDLEWARES = {
