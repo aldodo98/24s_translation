@@ -16,6 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 
+# from webdriver_manager.chrome import ChromeDriverManager
+
 
 class DiorSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -86,6 +88,7 @@ class DiorDownloaderMiddleware:
             chrome_options.add_argument('--window-size=1400,600')
             try:
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
+                # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))

@@ -28,7 +28,8 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 
 SCHEDULER_PERSIST = True
 FEED_EXPORT_ENCODING = 'utf-8'
-REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
+# REDIS_URL = 'redis://:redisHaiwaPAssw0rd@137.116.216.95:63790'
+REDIS_URL = 'redis://:HaiwaPAssw0rdUat@20.56.0.56:63790'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
