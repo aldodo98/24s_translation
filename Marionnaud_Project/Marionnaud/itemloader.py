@@ -2,7 +2,7 @@ from scrapy.loader import ItemLoader
 from itemloaders.processors import TakeFirst, MapCompose
 from w3lib.html import remove_tags, replace_escape_chars
 
-main_url = 'https://www.yoox.com'
+main_url = 'https://www.marionnaud.fr'
 
 
 def url_join(values):
@@ -54,6 +54,7 @@ class ProductInfoItemLoader(ItemLoader):
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    FullDescription_in = MapCompose(remove_tags)
 
 
 class VariableClassItemLoader(ItemLoader):

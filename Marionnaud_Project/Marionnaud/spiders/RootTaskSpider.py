@@ -7,6 +7,7 @@ from Marionnaud.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 from Marionnaud.settings import BOT_NAME
 from scrapy.http.headers import Headers
 from scrapy_redis.spiders import RedisSpider
+import json
 
 # class RoottaskspiderSpider(scrapy.Spider):
 class RoottaskspiderSpider(RedisSpider):

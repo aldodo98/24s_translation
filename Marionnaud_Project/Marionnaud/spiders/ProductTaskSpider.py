@@ -75,6 +75,7 @@ class ProducttaskspiderSpider(RedisSpider):
                 'OldPrice',
                 self.getPrice(response.css('div.markdownPrice.priceformat::text').get(),
                               response.css('div.markdownPrice.priceformat sup::text').get()))
+
             productItemloader.add_value(
                 'ImageThumbnailUrl',
                 response.urljoin(response.css('a.productImagePrimaryLink img').attrib['data-src']))
