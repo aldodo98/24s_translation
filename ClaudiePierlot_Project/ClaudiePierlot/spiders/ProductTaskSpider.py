@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import scrapy
@@ -39,6 +40,9 @@ class ProductTaskSpider(RedisSpider):
             request.headers = Headers(random.choice(self.headers_list))
             self.crawler.engine.crawl(request, spider=self)
 
+    # start_urls = [
+    #     'https://fr.claudiepierlot.com/fr/accessoires/chaussures/120affinity/CFACH00183.html?dwvar_CFACH00183_color=B001#start=1',
+    # ]
     def parse(self, response):
         product = Product()
         product['Success'] = response.status == 200
@@ -58,10 +62,14 @@ class ProductTaskSpider(RedisSpider):
             productItemloader.add_value('OldPrice', self.OldPrice)
             productItemloader.add_value('LastChangeTime', datetime.utcnow())
             productItemloader.add_css('FullDescription', 'div.jspPane>p::text')
+            img_lis = response.css('#main-slide-product .main-image.image-zoom img')
+            productItemloader.add_value('ImageThumbnailUrl', self.get_thumbnail_url(img_lis))
+            urls = img_lis.css('img::attr(data-src)').extract()
             item = productItemloader.load_item()
             # 获取属性
             productAttributes = self.getProductAttributes(response)
             item['ProductAttributes'] = productAttributes
+            item['ImageUrls'] = ','.join(urls)
             yield item
         else:
             print('error!!!!!')
@@ -102,6 +110,15 @@ class ProductTaskSpider(RedisSpider):
             'TE': 'Trailers',
         }
     ]
+
+    def get_thumbnail_url(self, response):
+        li = response[0]
+        # print(li.get(), 888888888888888888)
+        img_url = li.css('img::attr(data-src)').get()
+        # if img_url is None:
+        #     return li.css('video').xpath('@src').get()
+        return img_url
+
     def getColorAttribute(self, response):
         # attributeBasicInfo
         attributeBasicInfo = AttributeBasicInfoClass()
@@ -157,7 +174,7 @@ class ProductTaskSpider(RedisSpider):
             variableClassItemLoader.add_value('OldPrice', self.OldPrice)
 
             variableClassItemLoader.add_value('Name', item.css('span[itemprop=color]::text').get())
-            variableClassItemLoader.add_value('ColorSquaresRgb', item.css('a::attr("style")').get())
+            variableClassItemLoader.add_value('ColorSquaresRgb', self.getColorSquaresRgb(item.css('a::attr("style")').get()))
             variableClassItemLoader.add_value('DisplayColorSquaresRgb', False)
             variableClassItemLoader.add_value('PriceAdjustment', 0)
             variableClassItemLoader.add_value('PriceAdjustmentUsePercentage', False)
@@ -211,3 +228,9 @@ class ProductTaskSpider(RedisSpider):
             result.append(colorAttri)
 
         return result
+
+    def getColorSquaresRgb(self, response):
+        url = re.match(r'^.+?url\((.+?)\)', response).group(1)
+        if self.main_url not in url:
+            url = self.main_url + url
+        return url
