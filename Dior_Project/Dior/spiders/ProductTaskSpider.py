@@ -57,17 +57,32 @@ class ProductTaskSpider(RedisSpider):
                 productItemloader.add_css('Name', 'span.multiline-text.product-titles-title::text')
                 productItemloader.add_css('ShortDescription', 'span.multiline-text.product-titles-subtitle::text')
 
-                productItemloader.add_css('Price', 'span.variation-option-price::text')
+                
                 productItemloader.add_css('Price', 'div.product-actions__price span.price-line::text')
+
+                img_lis = response.css('div.product-media__image')
+                productItemloader.add_value('ImageThumbnailUrl', self.get_thumbnail_url(img_lis))
+                urls = img_lis.css('img::attr(src)').extract()
+
                 productItemloader.add_value('LastChangeTime', datetime.utcnow().isoformat())
                 productItemloader.add_css('FullDescription', 'div.product-description-item__content')
                 item = productItemloader.load_item()
                 # 获取属性
                 productAttributes = self.getProductAttributes(filterRes)
+                item['ImageUrls'] = ','.join(urls)
                 item['ProductAttributes'] = productAttributes
                 yield item
         else:
             print('error!!!!!')
+
+    def get_thumbnail_url(self, response):
+        li = response[0]
+        # print(li.get(), 888888888888888888)
+        img_url = li.css('img::attr(src)').get()
+        # if img_url is None:
+        #     return li.css('video').xpath('@src').get()
+        return img_url
+
     def getColorAttribute(self, response):
         # attributeBasicInfo
         attributeBasicInfo = AttributeBasicInfoClass()
