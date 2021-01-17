@@ -83,6 +83,8 @@ class ProductTaskSpider(RedisSpider):
             loadItem = product_itemloader.load_item()
             #
             product_attributes = self.get_product_attributes(response)
+            if len(urls) > 0:
+                urls = urls[:-1]
             loadItem['ImageUrls'] = urls
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem

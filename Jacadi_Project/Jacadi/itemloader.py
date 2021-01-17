@@ -2,7 +2,7 @@ from scrapy.loader import ItemLoader
 from itemloaders.processors import TakeFirst, MapCompose
 from w3lib.html import remove_tags, replace_escape_chars
 
-main_url = 'http://www.jacadi.fr'
+main_url = 'https://www.jacadi.fr'
 
 def lowercase_processor(values):
     return values.lower()
