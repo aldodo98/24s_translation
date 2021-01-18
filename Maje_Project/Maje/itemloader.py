@@ -12,9 +12,19 @@ def processDesc(values):
 
 
 def processDataPrice(values):
-    result = replace_escape_chars(values, which_ones='€', replace_by=u'.')
+    result = replace_escape_chars(values, which_ones='€', replace_by=u'')
     result = replace_escape_chars(result, which_ones='EUR', replace_by=u'')
     return result
+
+def clear_line_feed(values):
+    result = replace_escape_chars(values, which_ones='\r\n', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\n', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\r', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\t', replace_by=u'')
+    return result
+
+def strip(values):
+    return values.strip()
 
 
 def convertMultipuleBlankToOne(values):
@@ -23,17 +33,20 @@ def convertMultipuleBlankToOne(values):
 
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    CategoryLevel1_in = MapCompose(remove_tags, clear_line_feed, strip)
+    CategoryLevel2_in = MapCompose(remove_tags, clear_line_feed, strip)
+    CategoryLevel3_in = MapCompose(remove_tags, clear_line_feed, strip)
 
 
 class ProductInfoItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
-    ProductName_in = MapCompose(remove_tags, processDesc)
+    ProductName_in = MapCompose(remove_tags, processDesc, strip)
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_output_processor = TakeFirst()
-    FullDescription_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    FullDescription_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
 
 

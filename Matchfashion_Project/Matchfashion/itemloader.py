@@ -28,6 +28,7 @@ def clear_line_feed(values):
     result = replace_escape_chars(values, which_ones='\r\n', replace_by=u'')
     result = replace_escape_chars(result, which_ones='\n', replace_by=u'')
     result = replace_escape_chars(result, which_ones='\r', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\t', replace_by=u'')
     return result
 
 def clear_new(values):
@@ -40,9 +41,9 @@ def strip(values):
 
 class CategoryTreeItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
-    CategoryLevel1_in = MapCompose(remove_tags, processDesc, strip)
-    CategoryLevel2_in = MapCompose(remove_tags, processDesc, strip)
-    CategoryLevel3_in = MapCompose(remove_tags, processDesc, strip)
+    CategoryLevel1_in = MapCompose(remove_tags, clear_line_feed, strip)
+    CategoryLevel2_in = MapCompose(remove_tags, clear_line_feed, strip)
+    CategoryLevel3_in = MapCompose(remove_tags, clear_line_feed, strip)
 
 
 class ProductInfoItemLoader(ItemLoader):
