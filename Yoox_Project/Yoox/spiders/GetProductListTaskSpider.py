@@ -12,48 +12,48 @@ from scrapy_redis.spiders import RedisSpider
 from Yoox.settings import BOT_NAME
 
 
-# class GetproductlisttaskspiderSpider(RedisSpider):
-class GetproductlisttaskspiderSpider(scrapy.Spider):
+class GetproductlisttaskspiderSpider(RedisSpider):
+# class GetproductlisttaskspiderSpider(scrapy.Spider):
     name = 'GetProductListTaskSpider'
     allowed_domains = ['www.yoox.com']
     redis_key = BOT_NAME + ':GetTreeProductListTaskSpider'
 
-    def start_requests(self):
-        urls = [
-            # 'http://www.yoox.com/fr/femme/shoponline/lunettes_mc#/dept=bagsaccwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27cchl%27%5d%7d&season=E',
-            # "https://www.yoox.com/fr/femme/shoponline?dept=newarrivalswomen&attributes={'nwrrvls'%3a['nwtpbrnds']}",
-            # "https://www.yoox.com/fr/femme/shoponline?dept=newarrivalswomen&attributes=#/dept=newarrivalswomen&gender=D&page=2&season=X",
-            # 'https://www.yoox.com/fr/femme/shoponline/robes_mc#/dept=clothingwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27vstt%27%5d%7d&season=E'
-            # 'https://www.yoox.com/fr/homme',
-            # 'https://www.yoox.com/fr/enfant',
-            'https://www.yoox.com/nl/men/shoponline/adidas_md#/Md=1319&dept=men&gender=U',
-            # 'https://www.yoox.com/nl/women/shoponline?dept=salewomen&attributes=%7b%27smrtfnd%27%3a%5b%27smbstndr%27%5d%7d'
-        ]
-        for url in urls:
-            print(url)
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
-                'CategoryTreeId': '1',
-                'Url': url
-            })
+    # def start_requests(self):
+    #     urls = [
+    #         # 'http://www.yoox.com/fr/femme/shoponline/lunettes_mc#/dept=bagsaccwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27cchl%27%5d%7d&season=E',
+    #         # "https://www.yoox.com/fr/femme/shoponline?dept=newarrivalswomen&attributes={'nwrrvls'%3a['nwtpbrnds']}",
+    #         # "https://www.yoox.com/fr/femme/shoponline?dept=newarrivalswomen&attributes=#/dept=newarrivalswomen&gender=D&page=2&season=X",
+    #         # 'https://www.yoox.com/fr/femme/shoponline/robes_mc#/dept=clothingwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27vstt%27%5d%7d&season=E'
+    #         # 'https://www.yoox.com/fr/homme',
+    #         # 'https://www.yoox.com/fr/enfant',
+    #         'https://www.yoox.com/nl/men/shoponline/adidas_md#/Md=1319&dept=men&gender=U',
+    #         # 'https://www.yoox.com/nl/women/shoponline?dept=salewomen&attributes=%7b%27smrtfnd%27%3a%5b%27smbstndr%27%5d%7d'
+    #     ]
+    #     for url in urls:
+    #         print(url)
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
+    #             'CategoryTreeId': '1',
+    #             'Url': url
+    #         })
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
-    # def __init__(self, *args, **kwargs):
-    #     # 修改这里的类名为当前类名
-    #     super(GetproductlisttaskspiderSpider, self).__init__(*args, **kwargs)
-    #
-    # def make_request_from_data(self, data):
-    #     receivedDictData = json.loads(str(data, encoding="utf-8"))
-    #     # print(receivedDictData)
-    #     # here you can use and FormRequest
-    #     formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
-    #                                      meta={'CategoryTreeId': receivedDictData['Id'], 'Url': receivedDictData['Level_Url']})
-    #     formRequest.headers = Headers(random.choice(self.headers_list))
-    #     return formRequest
-    #
-    # def schedule_next_requests(self):
-    #     for request in self.next_requests():
-    #         request.headers = Headers(random.choice(self.headers_list))
-    #         self.crawler.engine.crawl(request, spider=self)
+    def __init__(self, *args, **kwargs):
+        # 修改这里的类名为当前类名
+        super(GetproductlisttaskspiderSpider, self).__init__(*args, **kwargs)
+
+    def make_request_from_data(self, data):
+        receivedDictData = json.loads(str(data, encoding="utf-8"))
+        # print(receivedDictData)
+        # here you can use and FormRequest
+        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
+                                         meta={'CategoryTreeId': receivedDictData['Id'], 'Url': receivedDictData['Level_Url']})
+        formRequest.headers = Headers(random.choice(self.headers_list))
+        return formRequest
+
+    def schedule_next_requests(self):
+        for request in self.next_requests():
+            request.headers = Headers(random.choice(self.headers_list))
+            self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
         try:
