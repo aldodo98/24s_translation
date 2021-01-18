@@ -70,7 +70,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
 
         total_page = response.css('div#navigation-bar-bottom .text-light a::attr(data-total-page)').get()
         url = response.css('div#navigation-bar-bottom .text-light a::attr(href)')
-
+        print(total_page, url[-1].get(), 9090909099090909090)
         if url[-1].get() is None or url[-1].get() == '':
             _url = response.css('div#navigation-bar-bottom .text-light a::attr(rel)')
             for page in range(1, int(total_page) + 1):
@@ -78,7 +78,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
                 page_url = response.meta['Url'].split('#/')[0] + '#/' + suffix_url.replace('page=' + str(total_page),'page='+str(page))
                 yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list),meta={
                      'CategoryTreeId': response.meta['CategoryTreeId']
-                 })
+                 }, dont_filter=True)
 
         else:
             if total_page and url:
@@ -86,7 +86,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
                     page_url = url[-1].get().replace('page=' + str(total_page), 'page=' + str(page)).replace(str(total_page) + '#', str(page) + '#')
                     yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
                         'CategoryTreeId': response.meta['CategoryTreeId']
-                    })
+                    }, dont_filter=True)
             else:
                 lis = response.css('li.slide__2s7ZY')
                 for li in lis:
