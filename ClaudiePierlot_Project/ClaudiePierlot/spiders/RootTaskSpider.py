@@ -186,7 +186,7 @@ class RootTaskSpider(RedisSpider):
             catrgory_tree_one = self.get_category_tree(
                     title_one.css('a::attr(href)').get(),
                     title_one_title,
-                    ''
+                    '',
                     '',
                     response.meta['RootId']
                 )
