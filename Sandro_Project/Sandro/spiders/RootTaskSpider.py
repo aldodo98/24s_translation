@@ -35,7 +35,7 @@ class RoottaskspiderSpider(RedisSpider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.yoox.com", dont_filter=True,
+        formRequest = scrapy.FormRequest(url="https://fr.sandro-paris.com/", dont_filter=True,
                                          meta={'RootId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
