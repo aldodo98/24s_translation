@@ -14,7 +14,7 @@ steps:
 - task: RegexReplace@3
   inputs:
     InputSearchPattern: '**\settings.py'
-    FindRegex: '(REDIS_URL = ''redis):(\d)'
+    FindRegex: '^(REDIS_URL =)'
     ReplaceRegex: '$(REDIS_URL)'
     UseUTF8: true
     UseRAW: true
