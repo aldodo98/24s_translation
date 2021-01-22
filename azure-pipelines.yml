@@ -14,7 +14,7 @@ steps:
 - task: RegexReplace@3
   inputs:
     InputSearchPattern: '**\settings.py'
-    FindRegex: '^(REDIS_URL =)'
+    FindRegex: '(REDIS_URL =)'
     ReplaceRegex: '$(REDIS_URL)'
     UseUTF8: true
     UseRAW: true
@@ -48,4 +48,4 @@ steps:
     Destination: 'AzureBlob'
     storage: 'xshoudaistorageuat'
     ContainerName: 'xshoudai-prod-pipeline'
-    BlobPrefix: 'debug'
+    BlobPrefix: 'Celine_Project_settings.py'
