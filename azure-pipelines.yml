@@ -20,10 +20,18 @@ steps:
     UseRAW: true
   displayName: 'Run a one-line script'
 
-- task: AzureFileCopy@4
+- task: CopyFiles@2
   inputs:
-    SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
-    azureSubscription: 'XSHOUDAI-PROD(2fcfe293-fbb3-486f-ae7a-41111cfbc474)'
-    Destination: 'AzureBlob'
-    storage: 'xshoudaistorageuat'
-    ContainerName: 'pipeline-debug'
+    SourceFolder: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)
+
+
+# - task: AzureFileCopy@4
+#   inputs:
+#     SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
+#     azureSubscription: 'XSHOUDAI-PROD(2fcfe293-fbb3-486f-ae7a-41111cfbc474)'
+#     Destination: 'AzureBlob'
+#     storage: 'xshoudaistorageuat'
+#     ContainerName: 'pipeline-debug'
+
