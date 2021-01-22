@@ -33,7 +33,7 @@ steps:
 #     publishLocation: 'Container'
 
 - task: ArchiveFiles@2
-  name: 'Archive Celine_Project'
+  name: 'Archive_Celine_Project'
   inputs:
     rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Celine_Project'
     includeRootFolder: true
