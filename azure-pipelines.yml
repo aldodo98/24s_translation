@@ -40,5 +40,5 @@ steps:
     Destination: 'AzureBlob'
     storage: 'xshoudaistorageuat'
     ContainerName: 'xshoudai-pipeline'
-    BlobPrefix: 'debug''
+    BlobPrefix: 'debug'
 
