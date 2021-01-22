@@ -22,7 +22,7 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
+    SourceFolder: $(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)
 
@@ -31,7 +31,7 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
-    
+
 # - task: AzureFileCopy@4
 #   inputs:
 #     SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
