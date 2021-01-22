@@ -11,7 +11,13 @@ pool:
 
   
 steps:
-- script: echo Hello, world!
+- task: RegexReplace@3
+  inputs:
+    InputSearchPattern: '**\settings.py'
+    FindRegex: '(REDIS_URL = ''redis):(\d)'
+    ReplaceRegex: '$(REDIS_URL)'
+    UseUTF8: true
+    UseRAW: true
   displayName: 'Run a one-line script'
 
 - script: |
