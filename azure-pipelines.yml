@@ -20,23 +20,22 @@ steps:
     UseRAW: true
   displayName: 'Run a one-line script'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: $(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py
-    Contents: '**'
-    TargetFolder: $(Build.ArtifactStagingDirectory)
+# - task: CopyFiles@2
+#   inputs:
+#     SourceFolder: $(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py
+#     Contents: '**'
+#     TargetFolder: $(Build.ArtifactStagingDirectory)
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: $(Build.ArtifactStagingDirectory)
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     PathtoPublish: $(Build.ArtifactStagingDirectory)
+#     ArtifactName: 'drop'
+#     publishLocation: 'Container'
 
 - task: AzureFileCopy@4
   inputs:
     SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
-    azureSubscription: 'XSHOUDAI-PROD(2fcfe293-fbb3-486f-ae7a-41111cfbc474)'
     Destination: 'AzureBlob'
-    storage: 'xshoudaistorageuat'
-    ContainerName: 'pipeline-debug'
-
+    storage: 'haiwascgeneral'
+    ContainerName: 'xshoudai-pipeline'
+    BlobPrefix: 'debug'
