@@ -32,6 +32,14 @@ steps:
 #     ArtifactName: 'drop'
 #     publishLocation: 'Container'
 
+- task: ArchiveFiles@2
+  name: 'Archive Celine_Project'
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Celine_Project'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(System.DefaultWorkingDirectory)/Celine_Project.zip'
+    replaceExistingArchive: true
 
 - task: AzureFileCopy@4
   inputs:
