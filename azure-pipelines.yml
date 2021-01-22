@@ -22,7 +22,7 @@ steps:
 
 - task: AzureFileCopy@4
   inputs:
-    SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'''
+    SourcePath: '$(System.DefaultWorkingDirectory)/Celine_Project/Celine/settings.py'
     azureSubscription: 'XSHOUDAI-PROD(2fcfe293-fbb3-486f-ae7a-41111cfbc474)'
     Destination: 'AzureBlob'
     storage: 'xshoudaistorageuat'
