@@ -10,22 +10,34 @@ from Powersante.settings import BOT_NAME
 
 import json
 
-class GetproductlisttaskspiderSpider(RedisSpider):
+
+class GetProductListTaskSpider(RedisSpider):
+# class GetProductListTaskSpider(scrapy.Spider):
     name = 'GetProductListTaskSpider'
     allowed_domains = ['www.powersante.com']
     # start_urls = ['http://www.powersante.com/']
-    redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
+    redis_key = BOT_NAME + ':GetTreeProductListTaskSpider'
+
+    # def start_requests(self):
+    #     urls = [
+    #         'https://www.powersante.com/visage/nettoyants-demaquillants/laits-huiles/'
+    #     ]
+    #     for url in urls:
+    #         print(url)
+    #         yield scrapy.Request(url=url, headers=random.choice(self.headers_list), callback=self.parse, meta={
+    #             'CategoryTreeId': '1'
+    #         }, dont_filter=True)
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
     def __init__(self, *args, **kwargs):
         # 修改这里的类名为当前类名
-        super(GetproductlisttaskspiderSpider, self).__init__(*args, **kwargs)
+        super(GetProductListTaskSpider, self).__init__(*args, **kwargs)
 
     def make_request_from_data(self, data):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
+        formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'], dont_filter=True,
                                          meta={'CategoryTreeId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
@@ -50,8 +62,8 @@ class GetproductlisttaskspiderSpider(RedisSpider):
 
         category_id = response.meta['CategoryTreeId']
 
-        lists = response.css('ul#instant-search-results-container>li')
-        print(len(lists))
+        lists = response.css('ul.products-grid.list>li')
+        print(len(lists), 9090909090909)
         for item in lists:
             product_info = ProductInfo()
             # 无折扣
@@ -85,7 +97,15 @@ class GetproductlisttaskspiderSpider(RedisSpider):
             product_itemloader.add_value('Price', regular_price or special_price)
 
             yield product_itemloader.load_item()
-        yield None
+
+        next_page = response.css('div.pager>a')
+        if next_page.css('::attr(href)').get() is not None and next_page.css('::attr(href)').get() != '':
+            yield scrapy.Request(url=next_page.css('::attr(href)').get(), callback=self.getProducts,
+                                 headers=random.choice(self.headers_list), meta={
+                    'CategoryTreeId': category_id,
+                }, dont_filter=True)
+        else:
+            yield None
 
     headers_list = [
         # Chrome
@@ -126,9 +146,3 @@ class GetproductlisttaskspiderSpider(RedisSpider):
             'TE': 'Trailers',
         }
     ]
-
-
-
-
-    def parse(self, response):
-        pass

@@ -91,16 +91,17 @@ class PowersanteDownloaderMiddleware:
                 chrome_options.add_argument('--disable-dev-shm-usage')
                 chrome_options.add_argument('--window-size=1400,600')
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
+                # self.driver = webdriver.Chrome(options=chrome_options)
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
-                locator = (By.CSS_SELECTOR, 'div#modal')
-                WebDriverWait(self.driver, 20).until(EC.presence_of_element_located(locator))
-                # if self.is_element_exist('div.close.inner_close'):
-                self.driver.find_element_by_css_selector('div.close.inner_close').click()
-
-                while self.is_element_exist('a#instant-search-results-show-more'):
-                    self.driver.execute_script("document.getElementById('instant-search-results-show-more').click()")
-                    sleep(4)
+                # locator = (By.CSS_SELECTOR, 'div#modal')
+                # WebDriverWait(self.driver, 20).until(EC.presence_of_element_located(locator))
+                # # if self.is_element_exist('div.close.inner_close'):
+                # self.driver.find_element_by_css_selector('div.close.inner_close').click()
+                self.driver.refresh()
+                # while self.is_element_exist('a#instant-search-results-show-more'):
+                #     self.driver.execute_script("document.getElementById('instant-search-results-show-more').click()")
+                #     sleep(4)
 
                 return HtmlResponse(url=request.url,
                                     body=self.driver.page_source,
