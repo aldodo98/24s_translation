@@ -11,7 +11,7 @@ from Powersante.items import ProductInfo
 from Powersante.items import Product
 from scrapy_redis.pipelines import RedisPipeline
 from Powersante.items import CategoryTree
-
+# import pymysql
 
 class RedisPipeline(RedisPipeline):
 
