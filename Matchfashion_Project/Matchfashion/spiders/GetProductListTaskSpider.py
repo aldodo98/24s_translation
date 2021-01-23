@@ -115,7 +115,7 @@ import json
 #         }
 #     ]
 
-class GetProductListTaskSpider(scrapy.Spider):
+class GetProductListTaskSpider(RedisSpider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
     allowed_domains = ['www.matchesfashion.com']
@@ -139,13 +139,13 @@ class GetProductListTaskSpider(scrapy.Spider):
         for request in self.next_requests():
             request.headers = Headers(random.choice(self.headers_list))
             self.crawler.engine.crawl(request, spider=self)
-    def start_requests(self):
-        urls = [
-            "https://www.matchesfashion.com/intl/womens/shop/clothing/jeans"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list)
-                                 )
+    # def start_requests(self):
+    #     urls = [
+    #         "https://www.matchesfashion.com/intl/womens/shop/clothing/jeans"
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list)
+    #                              )
 
     def parse(self, response):
         try:
@@ -157,8 +157,8 @@ class GetProductListTaskSpider(scrapy.Spider):
 
 
     def getProducts(self, response):
-        # category_id = response.meta['CategoryTreeId']
-        category_id = 'xxx'
+        category_id = response.meta['CategoryTreeId']
+        # category_id = 'xxx'
         lists = response.css('.lister__wrapper li')
         for item in lists:
             product_info = ProductInfo()
@@ -183,7 +183,7 @@ class GetProductListTaskSpider(scrapy.Spider):
                 nextUrl = self.main_url + nextUrl
             sleep(2)
             print(nextUrl)
-            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list))
+            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list), meta={'RootId': category_id})
         else:
             return
 

@@ -10,8 +10,8 @@ from Matchfashion.settings import BOT_NAME
 import json
 from string import Template
 
-# class MatchfashionSpider(RedisSpider):
-class MatchfashionSpider(scrapy.Spider):
+class MatchfashionSpider(RedisSpider):
+# class MatchfashionSpider(scrapy.Spider):
     redis_key = BOT_NAME + ':RootTaskSpider'
     name = 'RootTaskSpider'
     allowed_domains = ['www.matchesfashion.com']
@@ -26,7 +26,7 @@ class MatchfashionSpider(scrapy.Spider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://fr.maje.com",dont_filter=True,
+        formRequest = scrapy.FormRequest(url="https://www.matchesfashion.com/intl/womens",dont_filter=True,
                                          meta={'RootId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
@@ -36,14 +36,14 @@ class MatchfashionSpider(scrapy.Spider):
             request.headers = Headers(random.choice(self.headers_list))
             self.crawler.engine.crawl(request, spider=self)
 
-    def start_requests(self):
-        urls = [
-            "https://www.matchesfashion.com/intl/womens"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
-                'RootId': '1'
-            })
+    # def start_requests(self):
+    #     urls = [
+    #         "https://www.matchesfashion.com/intl/womens"
+    #     ]
+    #     for url in urls:
+    #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
+    #             'RootId': '1'
+    #         })
 
     def parse(self, response):
 
