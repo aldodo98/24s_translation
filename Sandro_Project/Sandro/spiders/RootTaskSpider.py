@@ -14,7 +14,7 @@ from scrapy_redis.spiders import RedisSpider
 class RoottaskspiderSpider(RedisSpider):
 # class RoottaskspiderSpider(scrapy.Spider):
     name = 'RootTaskSpider'
-    allowed_domains = ['fr.sandro-paris.com/']
+    allowed_domains = ['fr.sandro-paris.com']
     redis_key = BOT_NAME + ':RootTaskSpider'
 
     # def start_requests(self):
@@ -35,7 +35,7 @@ class RoottaskspiderSpider(RedisSpider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.yoox.com", dont_filter=True,
+        formRequest = scrapy.FormRequest(url="https://fr.sandro-paris.com", dont_filter=True,
                                          meta={'RootId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
