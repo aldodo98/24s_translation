@@ -115,7 +115,7 @@ import json
 #         }
 #     ]
 
-class GetProductListTaskSpider(scrapy.Spider):
+class GetProductListTaskSpider(RedisSpider):
     name = "GetTreeProductListTaskSpider"
     redis_key = BOT_NAME+':GetTreeProductListTaskSpider'
     allowed_domains = ['fr.maje.com']
@@ -178,7 +178,7 @@ class GetProductListTaskSpider(scrapy.Spider):
         if len(response.css('.loadmore-btn .js-loadmore')) > 0:
             nextUrl = response.css('.loadmore-btn .js-loadmore::attr("href")').get()
             sleep(5)
-            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list))
+            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list),  meta={'CategoryTreeId': category_id})
         else:
             return
 

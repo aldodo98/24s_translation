@@ -76,13 +76,15 @@ class ProductTaskSpider(RedisSpider):
             product_itemloader.add_value(
                 'ImageThumbnailUrl',
                 self.get_thumbnail_url(img_lis))
-            urls = self.get_img_urls(img_lis.css('::attr(src)').getall())
+            urls = self.get_img_urls(img_lis.css('::attr(data-src)').getall())
 
             product_itemloader.add_value('LastChangeTime', datetime.utcnow())
             product_itemloader.add_value('HashCode', '')
             loadItem = product_itemloader.load_item()
             #
             product_attributes = self.get_product_attributes(response)
+            if len(urls) > 0:
+                urls = urls[:-1]
             loadItem['ImageUrls'] = urls
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem
@@ -101,7 +103,7 @@ class ProductTaskSpider(RedisSpider):
     def get_thumbnail_url(self, response):
         li = response[0]
         # print(li.get(), 888888888888888888)
-        img_url = li.css('::attr(src)').get()
+        img_url = li.css('::attr(data-src)').get()
         # if img_url is None:
         #     return li.css('video').xpath('@src').get()
         return img_url

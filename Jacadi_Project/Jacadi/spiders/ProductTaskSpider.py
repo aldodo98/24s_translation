@@ -18,7 +18,7 @@ class ProductTaskSpider(RedisSpider):
     name = 'ProductTaskSpider'
     redis_key = BOT_NAME + ':ProductTaskSpider'
     allowed_domains = ['www.jacadi.fr']
-    main_url = "www.jacadi.fr"
+    main_url = "https://www.jacadi.fr"
 
     # def start_requests(self):
     #     urls = [
@@ -83,7 +83,8 @@ class ProductTaskSpider(RedisSpider):
             loadItem = product_itemloader.load_item()
             #
             product_attributes = self.get_product_attributes(response)
-
+            if len(urls) > 0:
+                urls = urls[:-1]
             loadItem['ImageUrls'] = urls
             loadItem['ProductAttributes'] = product_attributes
             yield loadItem
@@ -214,7 +215,10 @@ class ProductTaskSpider(RedisSpider):
             variable_class_item_loader.add_value('OldPrice', '')
 
             variable_class_item_loader.add_value('Name', item.css('img::attr(title)').get())
-            variable_class_item_loader.add_value('ColorSquaresRgb', self.main_url + item.css('img::attr(src)').get())
+            color_squares_RGB = ''
+            if item.css('img::attr(src)').get() is not None and item.css('img::attr(src)').get() != '':
+                color_squares_RGB = self.main_url + item.css('img::attr(src)').get()
+            variable_class_item_loader.add_value('ColorSquaresRgb', color_squares_RGB)
             variable_class_item_loader.add_value('DisplayColorSquaresRgb', False)
             variable_class_item_loader.add_value('PriceAdjustment', 0)
             variable_class_item_loader.add_value('PriceAdjustmentUsePercentage', False)

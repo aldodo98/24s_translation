@@ -4,11 +4,11 @@ import uuid
 import random
 import json
 from scrapy.http.headers import Headers
-from scrapy_redis.spiders import RedisSpider
+# from scrapy_redis.spiders import RedisSpider
 from Yoox.items import CategoryTree, ProductInfo, TreeLevel
 from Yoox.itemloader import CategoryTreeItemLoader, ProductInfoItemLoader
 # from scrapy.http.headers import Headers
-# from scrapy_redis.spiders import RedisSpider
+from scrapy_redis.spiders import RedisSpider
 from Yoox.settings import BOT_NAME
 
 
@@ -26,12 +26,14 @@ class GetproductlisttaskspiderSpider(RedisSpider):
     #         # 'https://www.yoox.com/fr/femme/shoponline/robes_mc#/dept=clothingwomen&gender=D&attributes=%7b%27ctgr%27%3a%5b%27vstt%27%5d%7d&season=E'
     #         # 'https://www.yoox.com/fr/homme',
     #         # 'https://www.yoox.com/fr/enfant',
-    #         'https://www.yoox.com/fr/garçon/chaussures/bébé/shoponline#/dept=shoesboy_baby&gender=U&season=E'
+    #         'https://www.yoox.com/nl/men/shoponline/adidas_md#/Md=1319&dept=men&gender=U',
+    #         # 'https://www.yoox.com/nl/women/shoponline?dept=salewomen&attributes=%7b%27smrtfnd%27%3a%5b%27smbstndr%27%5d%7d'
     #     ]
     #     for url in urls:
     #         print(url)
     #         yield scrapy.Request(url=url, callback=self.parse, headers=random.choice(self.headers_list), meta={
-    #             'CategoryTreeId': '1'
+    #             'CategoryTreeId': '1',
+    #             'Url': url
     #         })
 
     # __init__方法必须按规定写，使用时只需要修改super()里的类名参数即可
@@ -44,7 +46,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
         # print(receivedDictData)
         # here you can use and FormRequest
         formRequest = scrapy.FormRequest(url=receivedDictData['Level_Url'],dont_filter=True,
-                                         meta={'CategoryTreeId': receivedDictData['Id']})
+                                         meta={'CategoryTreeId': receivedDictData['Id'], 'Url': receivedDictData['Level_Url']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
 
@@ -68,23 +70,33 @@ class GetproductlisttaskspiderSpider(RedisSpider):
 
         total_page = response.css('div#navigation-bar-bottom .text-light a::attr(data-total-page)').get()
         url = response.css('div#navigation-bar-bottom .text-light a::attr(href)')
-        print(total_page, url, 33333333333333333)
-        if total_page and url:
+        print(total_page, url[-1].get(), 9090909099090909090)
+        if url[-1].get() is None or url[-1].get() == '':
+            _url = response.css('div#navigation-bar-bottom .text-light a::attr(rel)')
             for page in range(1, int(total_page) + 1):
-                page_url = url[-1].get().replace('page=' + str(total_page), 'page=' + str(page)).replace(str(total_page) + '#', str(page) + '#')
-                yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
-                    'CategoryTreeId': response.meta['CategoryTreeId']
-                })
+                suffix_url = _url[-1].get().replace('address:','')
+                page_url = response.meta['Url'].split('#/')[0] + '#/' + suffix_url.replace('page=' + str(total_page),'page='+str(page))
+                yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list),meta={
+                     'CategoryTreeId': response.meta['CategoryTreeId']
+                 }, dont_filter=True)
+
         else:
-            lis = response.css('li.slide__2s7ZY')
-            for li in lis:
-                yield self.generateProductItem(
-                    li.css('div.title__1-Nny span::text').get(),
-                    li.css('div.current__2yHPu::text').get(),
-                    li.css('a::attr(href)').get(),
-                    response.meta['CategoryTreeId'],
-                    None
-                )
+            if total_page and url:
+                for page in range(1, int(total_page) + 1):
+                    page_url = url[-1].get().replace('page=' + str(total_page), 'page=' + str(page)).replace(str(total_page) + '#', str(page) + '#')
+                    yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
+                        'CategoryTreeId': response.meta['CategoryTreeId']
+                    }, dont_filter=True)
+            else:
+                lis = response.css('li.slide__2s7ZY')
+                for li in lis:
+                    yield self.generateProductItem(
+                        li.css('div.title__1-Nny span::text').get(),
+                        li.css('div.current__2yHPu::text').get(),
+                        li.css('a::attr(href)').get(),
+                        response.meta['CategoryTreeId'],
+                        None
+                    )
 
 
     def getProducts(self, response):
@@ -92,7 +104,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
             yield None
         category_id = response.meta['CategoryTreeId']
         lists = response.css('div#itemsGrid .col-8-24')
-        print(len(lists))
+        # print(len(lists),'000000000000000000000000000')
         for item in lists:
             product_price = item.css('div::attr(data-discountprice_eur)').get()
             # 商品名称
