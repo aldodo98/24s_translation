@@ -57,8 +57,11 @@ class ProductTaskSpider(RedisSpider):
                 productItemloader.add_css('Name', 'span.multiline-text.product-titles-title::text')
                 productItemloader.add_css('ShortDescription', 'span.multiline-text.product-titles-subtitle::text')
 
-                
-                productItemloader.add_css('Price', 'div.product-actions__price span.price-line::text')
+                price = response.css('div.product-actions__price span.price-line::text').get()
+                if price is None or price == '':
+                    price = response.css('span.variation-option-price::text').get()
+                productItemloader.add_value('Price', price)
+                # productItemloader.add_css('Price', 'div.product-actions__price span.price-line::text')
 
                 img_lis = response.css('div.product-media__image')
                 productItemloader.add_value('ImageThumbnailUrl', self.get_thumbnail_url(img_lis))
