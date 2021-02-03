@@ -179,7 +179,7 @@ class DiorSpider(RedisSpider):
 
     def generate_levels(self, response):
         results = list()
-        for level in response.css('ul.listMenu.main-listMenu>li.listItem')[:5]:
+        for level in response.css('ul.listMenu.main-listMenu>li.listItem')[:6]:
             # 一级菜单
             title_one = level.css('li.listItem>a')
             title_one_title = title_one.css('span::text').get()

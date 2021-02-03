@@ -178,7 +178,7 @@ class GetProductListTaskSpider(RedisSpider):
         if len(response.css('.loadmore-btn .js-loadmore')) > 0:
             nextUrl = response.css('.loadmore-btn .js-loadmore::attr("href")').get()
             sleep(5)
-            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list),  meta={'CategoryTreeId': category_id})
+            yield scrapy.Request(url=nextUrl, callback=self.getProducts, headers=random.choice(self.headers_list), meta={'CategoryTreeId': category_id}, dont_filter=True)
         else:
             return
 
