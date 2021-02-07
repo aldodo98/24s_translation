@@ -41,6 +41,7 @@ class CategoryTreeItemLoader(ItemLoader):
 class ProductInfoItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
     ProductName_in = MapCompose(remove_tags, processDesc, strip)
 
 class ProductItemLoader(ItemLoader):
@@ -48,6 +49,7 @@ class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     FullDescription_in = MapCompose(remove_tags, processDesc, convertMultipuleBlankToOne)
     Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    OldPrice_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
 
 
 class VariableClassItemLoader(ItemLoader):
