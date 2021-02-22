@@ -1,3 +1,4 @@
 /Celine_Project.zip
 **/.idea
 **/__pycache__
+*.sqlite

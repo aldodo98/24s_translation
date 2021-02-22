@@ -81,15 +81,17 @@ class RoottaskspiderSpider(RedisSpider):
                 )
             )
 
-            for item in li.css('ul.level-2'):
-                for level in item.xpath('./li/a'):
-                    if item.xpath('./p/text()').get() is None or item.xpath('./p/text()').get() == '':
+            ul_level_2 = li.css('ul.level-2');
+            for i in range(len(ul_level_2)):
+                for level in ul_level_2[i].xpath('./li/a'):
+                    if ul_level_2[i].xpath('./p/text()').get() is None or ul_level_2[i].xpath('./p/text()').get() == '':
                         results.append(
                             self.getCategoryItem(
                                 level.css('::attr(href)').get(),
                                 response.meta['RootId'],
                                 response.meta['Cate_1'],
                                 li.css('span::text').get(),
+                                ul_level_2[i-1].xpath('./p/text()').get(),
                                 level.css('::text').get()
                             )
                         )
@@ -100,7 +102,7 @@ class RoottaskspiderSpider(RedisSpider):
                                 response.meta['RootId'],
                                 response.meta['Cate_1'],
                                 li.css('span::text').get(),
-                                item.xpath('./p/text()').get(),
+                                ul_level_2[i].xpath('./p/text()').get(),
                                 level.css('::text').get()
                             )
                         )
