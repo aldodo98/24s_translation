@@ -76,25 +76,27 @@ class CelineRootTaskSpider(RedisSpider):
         return results
 
     def get_category_tree(self, url, c_one, c_two, c_three='', c_rootId=''):
+        if url is not None:
+            category_tree = CategoryTree()
+            category_itemloader = CategoryTreeItemLoader(item=category_tree)
+            category_itemloader.add_value('Id', str(uuid.uuid4()))
+            category_itemloader.add_value('RootId', c_rootId)
+            print(url)
 
-        category_tree = CategoryTree()
-        category_itemloader = CategoryTreeItemLoader(item=category_tree)
-        category_itemloader.add_value('Id', str(uuid.uuid4()))
-        category_itemloader.add_value('RootId', c_rootId)
-        if self.main_url not in url:
-            category_itemloader.add_value('Level_Url', self.main_url + url)
-        else:
-            category_itemloader.add_value('Level_Url', url)
+            if self.main_url not in url:
+                category_itemloader.add_value('Level_Url', self.main_url + url)
+            else:
+                category_itemloader.add_value('Level_Url', url)
 
-        category_itemloader.add_value('ProjectName', BOT_NAME)
-        category_itemloader.add_value('CategoryLevel1', c_one)
-        category_itemloader.add_value('CategoryLevel2', c_two)
-        category_itemloader.add_value('CategoryLevel3', c_three)
-        category_itemloader.add_value('CategoryLevel4', '')
-        category_itemloader.add_value('CategoryLevel5', '')
+            category_itemloader.add_value('ProjectName', BOT_NAME)
+            category_itemloader.add_value('CategoryLevel1', c_one)
+            category_itemloader.add_value('CategoryLevel2', c_two)
+            category_itemloader.add_value('CategoryLevel3', c_three)
+            category_itemloader.add_value('CategoryLevel4', '')
+            category_itemloader.add_value('CategoryLevel5', '')
 
-        item_load = category_itemloader.load_item()
-        return item_load
+            item_load = category_itemloader.load_item()
+            return item_load
 
     headers_list = [
         # Chrome
