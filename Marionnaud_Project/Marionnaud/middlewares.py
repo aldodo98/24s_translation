@@ -16,10 +16,11 @@ from selenium.webdriver.common.keys import Keys
 
 from itemadapter import is_item, ItemAdapter
 
-
-chrome_options=Options()
+chrome_options = Options()
 # chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
+
+
 # from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
 
@@ -146,3 +147,7 @@ class MarionnaudDownloaderMiddleware:
         except:
             flag = False
             return flag
+
+
+# pipeline.py
+
