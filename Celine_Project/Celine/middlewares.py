@@ -86,10 +86,13 @@ class CelineDownloaderMiddleware:
             try:
                 print(request)
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
-                # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
+                self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 if self.is_element_exist('button#onetrust-accept-btn-handler'):
-                    self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
+                    element = self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler')
+                    self.driver.execute_script("arguments[0].click();", element)
+                    # print(self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler'))
+                    # self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
                 total_products_count = 0
                 while True and self.is_element_exist('ul.o-listing-grid li a'):
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
