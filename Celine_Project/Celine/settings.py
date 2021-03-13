@@ -12,7 +12,7 @@ BOT_NAME = 'Celine'
 SPIDER_MODULES = ['Celine.spiders']
 NEWSPIDER_MODULE = 'Celine.spiders'
 
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 1
 
 MYSQL_DB_NAME = 'dbo'
 MYSQL_HOST = 'localhost'
@@ -39,7 +39,13 @@ ITEM_PIPELINES = {
 
 DOWNLOADER_MIDDLEWARES = {
    'Celine.middlewares.CelineDownloaderMiddleware': 543,
+   'Celine.customemiddlewares.RandomUserAgentMiddleware': 300,
+   'scrapy_crawlera.CrawleraMiddleware': 400
 }
+
+CRAWLERA_ENABLED = True
+CRAWLERA_APIKEY = '4b78a7698b934434b35bcf2da0681e78'
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'Celine (+http://www.yourdomain.com)'
