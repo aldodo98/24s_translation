@@ -84,7 +84,7 @@ class GetproductlisttaskspiderSpider(RedisSpider):
             yield scrapy.Request(url=self.url_join(pagination.css('a::attr(href)').get()), callback=self.parse,
                                  headers=random.choice(self.headers_list), meta={
                                     'CategoryTreeId': response.meta['CategoryTreeId']
-                                })
+                                }, dont_filter=True)
 
     def getProducts(self, response):
         if response.status != 200:
