@@ -30,10 +30,16 @@ def processDesc(values):
     result = replace_escape_chars(values, which_ones=('\t', '\r', '\n'), replace_by=u' ')
     return result
 
-
 def processDataPrice(values):
-    result = replace_escape_chars(values, which_ones='€', replace_by=u'.')
+    result = replace_escape_chars(values, which_ones='€', replace_by=u'')
     result = replace_escape_chars(result, which_ones='EUR', replace_by=u'')
+    result = replace_escape_chars(result, which_ones=' ', replace_by=u'')
+    result = replace_escape_chars(result, which_ones=',', replace_by=u'.')
+    result = replace_escape_chars(result, which_ones='\xa0', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\u202f', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\u20ac', replace_by=u'')
+    result = replace_escape_chars(result, which_ones='\u00a0', replace_by=u'')
+
     return result
 
 
@@ -43,6 +49,9 @@ def convertMultipuleBlankToOne(values):
 
 class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    FullDescription_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Price_in = MapCompose(remove_tags, processDesc, processDataPrice, convertMultipuleBlankToOne)
+    Name_in = MapCompose(remove_tags, processDesc)
 
 
 class VariableClassItemLoader(ItemLoader):

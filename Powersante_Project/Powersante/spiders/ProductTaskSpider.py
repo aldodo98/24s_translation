@@ -72,7 +72,7 @@ class ProducttaskspiderSpider(RedisSpider):
 
             product_itemloader.add_value(
                 'ImageThumbnailUrl',
-                response.css('div#gallery img::attr(src)').get())
+                response.css('div#gallery img::attr(data-large-src)').get())
 
             # product_itemloader.add_value(
             #     'ImageUrls', [])
@@ -98,7 +98,7 @@ class ProducttaskspiderSpider(RedisSpider):
 
     def get_product_desc(self, response):
         dr = re.compile(r'<[^>]+>', re.S)
-        dd = dr.sub('', response.css('div.product_desc p').get())
+        dd = dr.sub('', response.css('div.product_desc .description::text').get())
 
         return dd
 
