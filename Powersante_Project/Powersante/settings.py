@@ -12,7 +12,7 @@ BOT_NAME = 'Powersante'
 SPIDER_MODULES = ['Powersante.spiders']
 NEWSPIDER_MODULE = 'Powersante.spiders'
 
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 1
 
 MYSQL_DB_NAME = 'dbo'
 MYSQL_HOST = 'localhost'
@@ -39,7 +39,12 @@ ITEM_PIPELINES = {
 
 DOWNLOADER_MIDDLEWARES = {
     'Powersante.middlewares.PowersanteDownloaderMiddleware': 543,
+    'Powersante.mymiddlewares.RandomUserAgentMiddleware': 500,
+    'scrapy_crawlera.CrawleraMiddleware': 610
 }
+
+CRAWLERA_ENABLED = True
+CRAWLERA_APIKEY = '4b78a7698b934434b35bcf2da0681e78'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'Powersante (+http://www.yourdomain.com)'
@@ -48,7 +53,7 @@ DOWNLOADER_MIDDLEWARES = {
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
