@@ -8,6 +8,7 @@ from scrapy.http import HtmlResponse
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
+# from webdriver_manager.chrome import ChromeDriverManager
 
 
 chrome_options=Options()
@@ -86,6 +87,7 @@ class CelineDownloaderMiddleware:
             try:
                 print(request)
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
+                # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 if self.is_element_exist('button#onetrust-accept-btn-handler'):

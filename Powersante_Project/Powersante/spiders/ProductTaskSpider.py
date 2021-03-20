@@ -40,12 +40,12 @@ class ProducttaskspiderSpider(RedisSpider):
         # here you can use and FormRequest
         formRequest = scrapy.FormRequest(url=receivedDictData['ProductUrl'], dont_filter=True,
                                          meta={'TaskId': receivedDictData['Id']})
-        formRequest.headers = Headers(random.choice(self.headers_list))
+        # formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
 
     def schedule_next_requests(self):
         for request in self.next_requests():
-            request.headers = Headers(random.choice(self.headers_list))
+            # request.headers = Headers(random.choice(self.headers_list))
             self.crawler.engine.crawl(request, spider=self)
 
     def parse(self, response):
