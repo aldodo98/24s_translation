@@ -17,7 +17,7 @@ def processDataPrice(values):
     result = replace_escape_chars(values, which_ones='€', replace_by=u'')
     result = replace_escape_chars(result, which_ones='EUR', replace_by=u'')
     result = replace_escape_chars(result, which_ones=' ', replace_by=u'')
-    # result = replace_escape_chars(result, which_ones='.', replace_by=u'')
+    result = replace_escape_chars(result, which_ones=',', replace_by=u'.')
     return result
 
 

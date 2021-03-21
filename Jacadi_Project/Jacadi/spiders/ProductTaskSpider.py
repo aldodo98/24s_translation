@@ -103,7 +103,7 @@ class ProductTaskSpider(RedisSpider):
     def get_thumbnail_url(self, response):
         li = response[0]
         # print(li.get(), 888888888888888888)
-        img_url = li.css('::attr(src)').get()
+        img_url = self.main_url + li.css('::attr(src)').get()
         # if img_url is None:
         #     return li.css('video').xpath('@src').get()
         return img_url
