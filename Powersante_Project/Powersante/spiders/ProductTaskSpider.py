@@ -116,11 +116,11 @@ class ProducttaskspiderSpider(RedisSpider):
         return img_url
 
     def get_img_urls(self, response):
-        urls = response.css('div#gallery_nav img')
-        if urls is not None:
+        urls = response.css('div#gallery_nav .item img')
+        if urls is not None and (len(urls)>0):
             return ','.join(urls.css('::attr(src)').extract())
         else:
-            return ''
+            return response.css('div#gallery img::attr(data-large-src)').get()
 
     def get_product_attributes(self, response):
         result = []
