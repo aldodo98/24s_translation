@@ -16,6 +16,8 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -86,20 +88,21 @@ class CelineDownloaderMiddleware:
                 return None
             try:
                 print(request)
-                self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
+                #self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
+                self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 if self.is_element_exist('button#onetrust-accept-btn-handler'):
                     element = self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler')
                     self.driver.execute_script("arguments[0].click();", element)
-                    # print(self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler'))
-                    # self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
+                    #print(self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler'))
+                    #self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler').click()
                 total_products_count = 0
-                while True and self.is_element_exist('ul.o-listing-grid li a'):
+                while True and self.is_element_exist('ul.o-listing-grid li'):
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
                     sleep(4)
-                    count = len(self.driver.find_elements_by_css_selector('ul.o-listing-grid li a'))
+                    count = len(self.driver.find_elements_by_css_selector('ul.o-listing-grid li'))
                     if count == total_products_count:
                         break
                     total_products_count = count
