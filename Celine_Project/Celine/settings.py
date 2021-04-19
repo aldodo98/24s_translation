@@ -52,7 +52,6 @@ CRAWLERA_APIKEY = 'aefed0718bb34a449ac48f456e15777c'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
-
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 1
 

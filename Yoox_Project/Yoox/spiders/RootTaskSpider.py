@@ -16,7 +16,7 @@ class RoottaskspiderSpider(RedisSpider):
     name = 'RootTaskSpider'
     allowed_domains = ['www.yoox.com']
     redis_key = BOT_NAME+':RootTaskSpider'
-
+    main_url = 'https://www.yoox.com'
     # def start_requests(self):
     #     urls = [
     #         "https://www.yoox.com/fr",
@@ -40,7 +40,7 @@ class RoottaskspiderSpider(RedisSpider):
         receivedDictData = json.loads(str(data, encoding="utf-8"))
         # print(receivedDictData)
         # here you can use and FormRequest
-        formRequest = scrapy.FormRequest(url="https://www.yoox.com", dont_filter=True,
+        formRequest = scrapy.FormRequest(url="https://www.yoox.com/fr/designerindex/women", dont_filter=True,
                                          meta={'RootId': receivedDictData['Id']})
         formRequest.headers = Headers(random.choice(self.headers_list))
         return formRequest
@@ -60,22 +60,26 @@ class RoottaskspiderSpider(RedisSpider):
     def getCategory(self, response):
         success = response.status == 200
         if success:
-            cate_list_1 = response.css('div#splash-banners-container .banners-splash-wrapper')  # 一级目录元素列表
+            cate_list_1 = response.css('li[class^="letter-block-spacer"]')  # 一级目录元素列表
             for ele in cate_list_1:
-                cate_1 = ele.css('a span::text').get()  # 一级目录
-                url_1 = ele.css('a::attr(href)').get()  # 一级目录商品url
-                item = self.getCategoryItem(
-                    cate_1,
-                    None,
-                    None,
-                    url_1,
-                    response.meta['RootId']
-                )
-                yield item
-                yield scrapy.Request(url=item['Level_Url'], callback=self.parse_level, headers=random.choice(self.headers_list), meta={
-                    'RootId': response.meta['RootId'],
-                    'Cate_1': cate_1
-                })
+                cate_1 = ele.css('h3[class^="big-letter"]::text').get()  # 一级目录  # 一级目录商品url
+                cate_2_urls = ele.xpath('div/ul/li/a/@href').extract()
+                cate_2_names = ele.xpath('div/ul/li/a/text()').extract()
+                for cate_2_ele in zip(cate_2_names, cate_2_urls):
+                    cate_2 = cate_2_ele[0]
+                    cate_2_url = self.main_url + cate_2_ele[1]
+                    item = self.getCategoryItem(
+                        cate_1,
+                        cate_2,
+                        None,
+                        cate_2_url,
+                        response.meta['RootId']
+                    )
+                    yield item
+                    #yield scrapy.Request(url=item['Level_Url'], callback=self.parse_level, headers=random.choice(self.headers_list), meta={
+                    #    'RootId': response.meta['RootId'],
+                    #    'Cate_1': cate_1
+                    #})
 
     def parse_level(self, response):
         success = response.status == 200
