@@ -12,7 +12,7 @@ BOT_NAME = 'Dior'
 SPIDER_MODULES = ['Dior.spiders']
 NEWSPIDER_MODULE = 'Dior.spiders'
 
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 0.1
 
 MYSQL_DB_NAME = 'dbo'
 MYSQL_HOST = 'localhost'
@@ -42,7 +42,7 @@ ITEM_PIPELINES = {
 }
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -74,7 +74,10 @@ ITEM_PIPELINES = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'Dior.middlewares.DiorDownloaderMiddleware': 543,
+   'scrapy_crawlera.CrawleraMiddleware': 400
 }
+CRAWLERA_ENABLED = True
+CRAWLERA_APIKEY = 'aefed0718bb34a449ac48f456e15777c'
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
