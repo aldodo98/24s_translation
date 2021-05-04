@@ -44,7 +44,7 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 CRAWLERA_ENABLED = True
-CRAWLERA_APIKEY = 'aefed0718bb34a449ac48f456e15777c'
+CRAWLERA_APIKEY = 'aa86b13188994ca6a2d97c2dc8ed14da'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

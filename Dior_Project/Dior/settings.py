@@ -76,8 +76,9 @@ DOWNLOADER_MIDDLEWARES = {
    'Dior.middlewares.DiorDownloaderMiddleware': 543,
    'scrapy_crawlera.CrawleraMiddleware': 400
 }
+
 CRAWLERA_ENABLED = True
-CRAWLERA_APIKEY = 'aefed0718bb34a449ac48f456e15777c'
+CRAWLERA_APIKEY = 'aa86b13188994ca6a2d97c2dc8ed14da'
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
