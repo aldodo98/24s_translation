@@ -40,11 +40,11 @@ ITEM_PIPELINES = {
 DOWNLOADER_MIDDLEWARES = {
     'Powersante.middlewares.PowersanteDownloaderMiddleware': 543,
     'Powersante.mymiddlewares.RandomUserAgentMiddleware': 500,
-    'scrapy_crawlera.CrawleraMiddleware': 610
+    'scrapy_crawlera.CrawleraMiddleware': 400
 }
 
 CRAWLERA_ENABLED = True
-CRAWLERA_APIKEY = 'aa86b13188994ca6a2d97c2dc8ed14da'
+CRAWLERA_APIKEY = '6eb0e6e9d6944b75a262c441a77f928d'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'Powersante (+http://www.yourdomain.com)'

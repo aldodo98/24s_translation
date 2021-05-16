@@ -39,7 +39,11 @@ ITEM_PIPELINES = {
 
 DOWNLOADER_MIDDLEWARES = {
    'Sandro.middlewares.SandroDownloaderMiddleware': 543,
+   'scrapy_crawlera.CrawleraMiddleware': 400
 }
+
+CRAWLERA_ENABLED = True
+CRAWLERA_APIKEY = '6eb0e6e9d6944b75a262c441a77f928d'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'Sandro (+http://www.yourdomain.com)'
@@ -48,7 +52,7 @@ DOWNLOADER_MIDDLEWARES = {
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
