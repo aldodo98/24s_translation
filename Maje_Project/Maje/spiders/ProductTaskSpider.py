@@ -53,7 +53,7 @@ class ProductTaskSpider(RedisSpider):
             productItemloader.add_value('LastChangeTime', datetime.utcnow().isoformat())
             productItemloader.add_value('FullDescription', filterRes.css('p[itemprop=description]::text').get())
             img_lis = response.css('.swiper-wrapper>li.swiper-slide img')
-            ImageThumbnailUrl = response.css('.swiper-wrapper>li.swiper-slide:nth-child(1) img::attr(src)').get()
+            ImageThumbnailUrl = response.css('.swiper-wrapper>li.swiper-slide:nth-child(1) img::attr(data-src)').get()
             productItemloader.add_value('ImageThumbnailUrl', ImageThumbnailUrl)
             urls = img_lis.css('img::attr(data-src)').extract()
             urls.append(ImageThumbnailUrl)
