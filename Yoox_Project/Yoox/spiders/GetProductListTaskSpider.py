@@ -68,35 +68,41 @@ class GetproductlisttaskspiderSpider(RedisSpider):
         if response.status != 200:
             yield None
 
-        total_page = response.css('div#navigation-bar-bottom .text-light a::attr(data-total-page)').get()
-        url = response.css('div#navigation-bar-bottom .text-light a::attr(href)')
-        print(total_page, url[-1].get(), 9090909099090909090)
-        if url[-1].get() is None or url[-1].get() == '':
-            _url = response.css('div#navigation-bar-bottom .text-light a::attr(rel)')
-            for page in range(1, int(total_page) + 1):
-                suffix_url = _url[-1].get().replace('address:','')
-                page_url = response.meta['Url'].split('#/')[0] + '#/' + suffix_url.replace('page=' + str(total_page),'page='+str(page))
-                yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list),meta={
-                     'CategoryTreeId': response.meta['CategoryTreeId']
-                 }, dont_filter=True)
-
+        total_page = response.css('div#navigation-bar-bottom div ul li.text-light a::attr(data-total-page)').get()
+        if total_page is None:
+            yield scrapy.Request(url=response.url, callback=self.getProducts, headers=random.choice(self.headers_list),
+                                 meta={
+                                     'CategoryTreeId': response.meta['CategoryTreeId']
+                                 }, dont_filter=True)
         else:
-            if total_page and url:
+            url = response.css('div#navigation-bar-bottom div ul li.text-light a::attr(href)')
+            # print(total_page, url[-1].get(), 9090909099090909090)
+            if url[-1].get() is None or url[-1].get() == '':
+                _url = response.css('div#navigation-bar-bottom div ul li.text-light a::attr(rel)')
                 for page in range(1, int(total_page) + 1):
-                    page_url = url[-1].get().replace('page=' + str(total_page), 'page=' + str(page)).replace(str(total_page) + '#', str(page) + '#')
-                    yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
+                    suffix_url = _url[-1].get().replace('address:','')
+                    page_url = response.meta['Url'].split('#/')[0] + '#/' + suffix_url.replace('page=' + str(total_page),'page='+str(page))
+                    yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list),meta={
                         'CategoryTreeId': response.meta['CategoryTreeId']
                     }, dont_filter=True)
+
             else:
-                lis = response.css('li.slide__2s7ZY')
-                for li in lis:
-                    yield self.generateProductItem(
-                        li.css('div.title__1-Nny span::text').get(),
-                        li.css('div.current__2yHPu::text').get(),
-                        li.css('a::attr(href)').get(),
-                        response.meta['CategoryTreeId'],
-                        None
-                    )
+                if total_page and url:
+                    for page in range(1, int(total_page) + 1):
+                        page_url = url[-1].get().replace('page=' + str(total_page), 'page=' + str(page)).replace(str(total_page) + '#', str(page) + '#')
+                        yield scrapy.Request(url=page_url, callback=self.getProducts, headers=random.choice(self.headers_list), meta={
+                            'CategoryTreeId': response.meta['CategoryTreeId']
+                        }, dont_filter=True)
+                else:
+                    lis = response.css('li.slide__2s7ZY')
+                    for li in lis:
+                        yield self.generateProductItem(
+                            li.css('div.title__1-Nny span::text').get(),
+                            li.css('div.current__2yHPu::text').get(),
+                            li.css('a::attr(href)').get(),
+                            response.meta['CategoryTreeId'],
+                            None
+                        )
 
 
     def getProducts(self, response):

@@ -8,7 +8,7 @@ from scrapy.http import HtmlResponse
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -16,7 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 
-#from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
 
 
 class DiorSpiderMiddleware:
@@ -88,7 +88,7 @@ class DiorDownloaderMiddleware:
             chrome_options.add_argument('--window-size=1400,600')
             try:
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
-                #self.driver = webdriver.Chrome(ChromeDriverManager().install())
+                # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
                 # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
@@ -121,7 +121,7 @@ class DiorDownloaderMiddleware:
             chrome_options.add_argument('--window-size=1400,600')
             try:
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
-                #self.driver = webdriver.Chrome(ChromeDriverManager().install())
+                # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 self.driver.implicitly_wait(10)
                 self.driver.get(request.url)
 
@@ -129,15 +129,24 @@ class DiorDownloaderMiddleware:
                     element = self.driver.find_element_by_css_selector('button#onetrust-accept-btn-handler')
                     self.driver.execute_script("arguments[0].click();", element)
 
-                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                # locator = (By.CSS_SELECTOR, 'div.grid-view ul li div.lazyload-placeholder')
+                # WebDriverWait(self.driver, 10, 0.1).until(
+                    # EC.presence_of_all_elements_located(locator))  # 每隔 0.5s 执行一次，直到 10s
+                # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                element = self.driver.find_element(By.CSS_SELECTOR, 'div.grid-view ul li div.lazyload-placeholder')
+                while element is not None:
+                    self.driver.execute_script("return arguments[0].scrollIntoView();", element)
+                    sleep(0.2)
+                    element = self.driver.find_element(By.CSS_SELECTOR, 'div.grid-view ul li div.lazyload-placeholder')
+                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
+            except TimeoutException:
+                return HtmlResponse(url=request.url, status=500, request=request)
+            except NoSuchElementException:
                 return HtmlResponse(url=request.url,
                                     body=self.driver.page_source,
                                     request=request,
                                     encoding='utf-8',
                                     status=200)
-                # print(self.driver.find_element_by_css_selector('p.product-titles-ref'))
-            except TimeoutException:
-                return HtmlResponse(url=request.url, status=500, request=request)
             finally:
                 self.driver.close()
         else:
