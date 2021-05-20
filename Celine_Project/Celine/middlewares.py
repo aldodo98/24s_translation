@@ -17,7 +17,6 @@ chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -88,8 +87,8 @@ class CelineDownloaderMiddleware:
                 return None
             try:
                 print(request)
-                #self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
-                self.driver = webdriver.Chrome(ChromeDriverManager().install())
+                self.driver = webdriver.Chrome("/usr/bin/chromedriver",options=chrome_options)
+                #self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
