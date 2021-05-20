@@ -51,7 +51,7 @@ class ProducttaskspiderSpider(RedisSpider):
             product_itemloader.add_value('FullDescription', self.get_product_desc(response))
 
             product_itemloader.add_value('Price', self.get_product_price(response))
-            product_itemloader.add_value('OldPrice', response.css('div#item-price span.text-secondary').get())
+            product_itemloader.add_value('OldPrice', response.css('div#item-price div.text-secondary').get())
 
             product_itemloader.add_value(
                 'ImageThumbnailUrl',
@@ -79,7 +79,7 @@ class ProducttaskspiderSpider(RedisSpider):
         return response.css('li#itemDescription div.info-body::text').get()
 
     def get_product_price(self, response):
-        return response.css('div#item-price span.font-bold').get()
+        return response.css('div.font-bold span[itemprop=price]').get()
 
     def get_thumbnail_url(self, response):
         img = response[0]

@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from itemadapter import is_item, ItemAdapter
-
+# from webdriver_manager.chrome import ChromeDriverManager
 
 chrome_options=Options()
 chrome_options.add_argument('--headless')
@@ -90,7 +90,7 @@ class YooxDownloaderMiddleware:
                 chrome_options.add_argument('--window-size=1400,600')
                 self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
                 # self.driver = webdriver.Chrome(options=chrome_options)
-
+                # self.driver = webdriver.Chrome(ChromeDriverManager().install())
                 # self.driver = webdriver.Chrome("/usr/bin/chromedriver", options=chrome_options)
                 # # self.driver.implicitly_wait(10)  # 隐性等待和显性等待可以同时用，但要注意：等待的最长时间取两者之中的大者
                 self.driver.get(request.url)
